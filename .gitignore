@@ -1,0 +1,8 @@
+__pycache__/
+initialize_cards/__pycache__/
+.venv/
+venv/
+.dist/
+dist/
+build/
+.build/
