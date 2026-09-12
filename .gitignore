@@ -1,8 +1,9 @@
 __pycache__/
-initialize_cards/__pycache__/
+*.py[cod]
+
 .venv/
 venv/
-.dist/
+
 dist/
 build/
-.build/
+*.egg-info/
