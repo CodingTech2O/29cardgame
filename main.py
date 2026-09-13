@@ -3,3 +3,4 @@ from game import game
 
 bots,player = initialize_cards()
 game.state("Playing")
+ 
