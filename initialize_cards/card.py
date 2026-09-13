@@ -11,4 +11,7 @@ class Card():
         self.value = data[name]
     def __repr__(self):
         return f"{self.name} of {self.suit}"
+    def __eq__(self, value):
+        if self.suit == value.suit and self.name == value.name:
+            return True
 

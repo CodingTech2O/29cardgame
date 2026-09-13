@@ -4,5 +4,7 @@ from game import game
 
 bots,player = initialize_cards()
 game.state = "Playing"
+game.players = [player]
+for bot in bots:
+    game.players.append(bot)
 
-bots[0]
