@@ -1,4 +1,6 @@
 import json
+from initialize_cards.card import Card
+
 
 with open('data/card_value.json') as f:
     data = json.load(f)
@@ -12,8 +14,35 @@ class Bot:
     def next_cards(self, cards):
         self.cards.extend(cards)
         self.values = [i.value for i in self.cards] 
-    def make_color(self,trump):
+    def make_trump(self,trump):
         self.made_trump= True
         self.trump= trump
     def __repr__(self):
         return self.name
+    def check_if_card_in_cards(self,card,suit):
+        card = Card(card,suit)
+        if card in self.cards:
+            return True 
+        return False
+    def check_any_card_in_cards(self,cards,suit):
+        for card in cards:
+            card = Card(card,suit)
+            if card in self.cards:
+                return True 
+        return False
+    
+
+    def decide_card_to_play(self,current_hand:list=None):
+        if len(current_hand) == 0:
+            if self.made_trump:
+                if self.check_if_card_in_cards("Jack",self.trump):
+                    return Card("Jack",self.trump)
+                if self.check_any_card_in_cards(["7","8","K","Q"])
+                
+    def play_card(self,card):
+        for i in range(len(self.cards)):
+            if card == self.cards[i]:
+                self.cards.pop(i)
+
+        return card
+        

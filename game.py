@@ -1,5 +1,6 @@
 import json
 from initialize_cards.card import Card
+from main import player,bots
 
 class Game:
     def __init__(self,state):
@@ -16,6 +17,9 @@ class Game:
         self.cards = cards
         self.all_cards = cards
         self.played_hands = []
+        self.players = [player]
+        self.players.extend(bots)
+
     def register_trump(self,trump):
         self.trump = trump
 
