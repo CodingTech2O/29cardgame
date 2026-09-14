@@ -47,9 +47,9 @@ def decide_bid(bot, last_bid=0):
     ## No Bid ##
     if number_of_strong_suit_cards == 1 and total_cards_points < 6:
         return 0, 0
-    elif number_of_strong_suit_cards == 2 and strong_suit_points < 3.1:
+    elif number_of_strong_suit_cards == 2 and strong_suit_points < 3.5:
         return 0, 0
-    elif number_of_strong_suit_cards == 3 and strong_suit_points < 2.1:
+    elif number_of_strong_suit_cards == 3 and strong_suit_points < 2.5:
         return 0, 0
 
     ## Pair Bids (King + Queen of the strong suit) ##

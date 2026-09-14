@@ -14,4 +14,6 @@ class Card():
     def __eq__(self, value):
         if self.suit == value.suit and self.name == value.name:
             return True
+    def __lt__(self, other):
+        return self.value < other.value
 
