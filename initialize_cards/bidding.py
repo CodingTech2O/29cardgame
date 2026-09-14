@@ -302,7 +302,7 @@ def do_bidding(b1, b2, b3, p1):
                 str
             )
 
-    winner[0].make_color(winner[2])
+    winner[0].make_trump(winner[2])
     game.register_trump(winner[2])
 
     return winner

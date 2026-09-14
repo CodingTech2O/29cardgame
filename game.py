@@ -27,7 +27,7 @@ class Game:
         for h in hand:
             for i in range(len(self.cards)):
                 if self.cards[i] == h:
-                       self.card.pop(i)
+                       self.cards.pop(i)
                        self.played_hands.append(self.cards[i])
         return self.played_hands[-1]    
     
