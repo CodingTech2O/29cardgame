@@ -13,7 +13,7 @@ class Game:
             for name in data:
                 cards.append(Card(name, suit))
         self.cards = cards
-        self.all_cards = cards
+        self.all_cards = list(cards)
         self.played_hands = []
 
 
@@ -23,13 +23,13 @@ class Game:
     def dig(self):
         return self.trump
 
-    def play_hand(self,hand):
+    def play_hand(self, hand):
         for h in hand:
-            for i in range(len(self.cards)):
-                if self.cards[i] == h:
-                       self.cards.pop(i)
-                       self.played_hands.append(self.cards[i])
-        return self.played_hands[-1]    
+            for i, c in enumerate(self.cards):
+                if c == h:
+                    self.played_hands.append(self.cards.pop(i))
+                    break
+        return self.played_hands[-1]
     
 
 

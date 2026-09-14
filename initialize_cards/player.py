@@ -13,7 +13,7 @@ class Player:
     def next_cards(self, cards):
         self.cards.extend(cards)
         self.values = [i.value for i in self.cards]
-    def make_color(self,trump):
+    def make_trump(self,trump):
         self.made_trump= True
         self.trump= trump
     def __repr__(self):

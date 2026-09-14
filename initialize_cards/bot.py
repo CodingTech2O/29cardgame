@@ -74,11 +74,11 @@ class Bot:
                     #If Jack of trump
                     if self.check_if_card_in_cards("Jack",self.trump):
                         #Play Jack
-                        self.play_card(Card("Jack",self.trump))    
+                        return self.play_card(Card("Jack",self.trump))    
                     #Check for cards with points
                     elif self.check_if_card_in_cards("9",self.trump) or self.check_if_card_in_cards("10",self.trump) or self.check_if_card_in_cards("Ace",self.trump):
                         #Play Lowest card of trump
-                        self.play_card(min(self.filter(self.cards,suit=self.trump)))
+                        return self.play_card(min(self.filter(self.cards,suit=self.trump)))
                 #If not made trump
                 else:
                     temp_cards = [card for card in self.cards if card.name == "Jack"]
@@ -93,7 +93,22 @@ class Bot:
                             if cards_of_suit < prev_cards_of_suit:
                                 prev_cards_of_suit = cards_of_suit
                                 card_to_play = temp_card
-                        self.play_card(temp_card)                       
+                        return self.play_card(card_to_play)
+                    else:
+                        suits = ["Diamonds","Clubs","Spades","Hearts"]
+                        card_to_play = None
+                        for suit in suits:
+                            temp_cards = self.filter(self.cards, mini=-1, suit=suit)
+                            if len(temp_cards) == 0:
+                                continue
+                            elif self.check_any_card_in_cards(["9","Ace","10"], suit) and len(temp_cards) <= 2:
+                                continue
+                            elif card_to_play is None or min(temp_cards) < card_to_play:
+                                card_to_play = min(temp_cards)
+                        if card_to_play is None:
+                            card_to_play = min(self.filter(self.cards, mini=-1))
+                        return self.play_card(card_to_play) 
+                                           
                 
 
     def play_card(self, card):
