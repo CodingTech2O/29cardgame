@@ -459,6 +459,93 @@ class Bot:
                             
                                 return self.play_card(card_to_play)
 
+        # =========================
+        # Second round
+        # =========================
+
+        elif len(last_hands) == 1:
+            if self.trump:
+                trump_suit_cards_done = self.filter(game.played_hands, suit=self.trump)
+                for name in data:
+                    if data[name] > max([card.value for card in trump_suit_cards_done]) and Card(name, self.trump) in self.cards:
+                        card_of_suit_most_worth = Card(name, self.trump)
+                number_of_trump_cards_done = len(trump_suit_cards_done)
+            if card_of_suit_most_worth:
+                highest_trump = True
+            if len(current_hand) == 0:
+
+                last_game_suit = last_hands[0].suit
+                temp_cards = [
+                    card for card in self.cards
+                    if card.name == "Jack" and card.suit != last_game_suit
+                ]
+                
+                if temp_cards.__len__() != 0:
+                
+                    card_to_play = ""
+                
+                    prev_cards_of_suit = 100
+                
+                    for temp_card in temp_cards:
+                
+                        cards_of_suit = 0
+                
+                        for card in self.cards:
+                            if card.suit == temp_card.suit:
+                                cards_of_suit += 1
+                
+                        if cards_of_suit < prev_cards_of_suit:
+                            prev_cards_of_suit = cards_of_suit
+                            card_to_play = temp_card
+                
+                    return self.play_card(card_to_play)
+                
+                else:
+                
+                    suits = [
+                        "Diamonds",
+                        "Clubs",
+                        "Spades",
+                        "Hearts"
+                    ]
+                
+                    card_to_play = None
+                
+                    for suit in suits:
+                
+                        temp_cards = self.filter(
+                            self.cards,
+                            mini=-1,
+                            suit=suit
+                        )
+                
+                        if len(temp_cards) == 0:
+                            continue
+                
+                        elif (
+                            self.check_any_card_in_cards(
+                                ["9", "Ace", "10"],
+                                suit
+                            )
+                            and len(temp_cards) <= 2
+                        ):
+                            continue
+                
+                        elif (
+                            card_to_play is None
+                            or min(temp_cards) < card_to_play
+                        ):
+                            card_to_play = min(temp_cards)
+                
+                    if card_to_play is None:
+                
+                        card_to_play = min(
+                            self.filter(self.cards, mini=-1)
+                        )
+                
+                    return self.play_card(card_to_play)                    
+            elif len(current_hand) == 1:
+               pass 
                                 
                                                         
 
