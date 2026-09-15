@@ -31,6 +31,7 @@ class Game:
                     break
         return self.played_hands[-1]
     
+    
 
 
 game = Game("Bid")
