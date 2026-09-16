@@ -830,6 +830,1158 @@ class Bot:
                             
                                 return self.play_card(card_to_play)
 
+        # =========================
+        # Third round
+        # =========================
+
+        elif len(last_hands) == 2:
+
+            card_of_suit_most_worth = None
+            highest_trump = False
+
+            if self.trump:
+
+                trump_suit_cards_done = self.filter(
+                    game.played_hands,
+                    mini=-1,
+                    suit=self.trump
+                )
+
+                if len(trump_suit_cards_done) != 0:
+
+                    for name in data:
+
+                        if (
+                            data[name] > max([card.value for card in trump_suit_cards_done])
+                            and Card(name, self.trump) in self.cards
+                        ):
+                            card_of_suit_most_worth = Card(name, self.trump)
+
+                number_of_trump_cards_done = len(trump_suit_cards_done)
+
+            if card_of_suit_most_worth:
+                highest_trump = True
+
+            # -------------------------
+            # the card kept back for the last hand
+            # only a card that nothing can beat any more is worth keeping
+            # -------------------------
+
+            card_to_save = None
+
+            for card in self.cards:
+
+                card_is_sure = False
+
+                if card.name == "Jack":
+                    card_is_sure = True
+
+                elif (
+                    card.name == "9"
+                    and Card("Jack", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "Ace"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "10"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                    and Card("Ace", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                if (
+                    card_is_sure
+                    and (
+                        card_to_save is None
+                        or card.value > card_to_save.value
+                    )
+                ):
+                    card_to_save = card
+
+            if card_to_save is None:
+
+                usable_cards = self.cards
+
+            else:
+
+                usable_cards = [
+                    card for card in self.cards
+                    if card != card_to_save
+                ]
+
+                if len(usable_cards) == 0:
+                    usable_cards = self.cards
+
+            if len(current_hand) == 0:
+
+                last_game_suits = [card.suit for card in last_hands]
+
+                temp_cards = [
+                    card for card in usable_cards
+                    if card.name == "Jack" and card.suit not in last_game_suits
+                ]
+
+                if temp_cards.__len__() != 0:
+
+                    card_to_play = ""
+
+                    prev_cards_of_suit = 100
+
+                    for temp_card in temp_cards:
+
+                        cards_of_suit = 0
+
+                        for card in usable_cards:
+                            if card.suit == temp_card.suit:
+                                cards_of_suit += 1
+
+                        if cards_of_suit < prev_cards_of_suit:
+                            prev_cards_of_suit = cards_of_suit
+                            card_to_play = temp_card
+
+                    return self.play_card(card_to_play)
+
+                else:
+
+                    suits = [
+                        "Diamonds",
+                        "Clubs",
+                        "Spades",
+                        "Hearts"
+                    ]
+
+                    card_to_play = None
+
+                    for suit in suits:
+
+                        temp_cards = self.filter(
+                            usable_cards,
+                            mini=-1,
+                            suit=suit
+                        )
+
+                        if len(temp_cards) == 0:
+                            continue
+
+                        elif (
+                            self.check_any_card_in_cards(
+                                ["9", "Ace", "10"],
+                                suit
+                            )
+                            and len(temp_cards) <= 2
+                        ):
+                            continue
+
+                        elif (
+                            card_to_play is None
+                            or min(temp_cards) < card_to_play
+                        ):
+                            card_to_play = min(temp_cards)
+
+                    if card_to_play is None:
+
+                        card_to_play = min(
+                            self.filter(usable_cards, mini=-1)
+                        )
+
+                    return self.play_card(card_to_play)
+
+            elif len(current_hand) == 1:
+
+                current_suit = current_hand[0].suit
+
+                # the saved card is given up when it is the only card of the suit
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if (
+                    current_suit == self.trump
+                    and highest_trump
+                    and card_of_suit_most_worth in usable_cards
+                ):
+                    return self.play_card(card_of_suit_most_worth)
+
+                elif Card("Jack", current_suit) in usable_cards:
+                    return self.play_card(Card("Jack", current_suit))
+
+                else:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(min(cards))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+            else:
+
+                opponent_cards = [current_hand[0]]
+                current_suit = current_hand[0].suit
+
+                if len(current_hand) > 2:
+                    opponent_cards.append(current_hand[2])
+
+                teammate_card = current_hand[1]
+
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(max(cards))
+
+                    cards = self.filter(usable_cards, 3, 0)
+
+                    if cards:
+                        cards = sorted(cards)
+                        return self.play_card(cards[-1])
+
+                    return self.play_card(
+                        min(self.filter(usable_cards, mini=-1))
+                    )
+
+                else:
+
+                    cards_of_suit = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards_of_suit:
+
+                        if Card("Jack", current_suit) in usable_cards:
+                            return self.play_card(Card("Jack", current_suit))
+
+                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                            return self.play_card(max(cards_of_suit))
+
+                        return self.play_card(min(cards_of_suit))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+        # =========================
+        # Fourth hand
+        # =========================
+
+        elif len(last_hands) == 3:
+
+            card_of_suit_most_worth = None
+            highest_trump = False
+
+            if self.trump:
+
+                trump_suit_cards_done = self.filter(
+                    game.played_hands,
+                    mini=-1,
+                    suit=self.trump
+                )
+
+                if len(trump_suit_cards_done) != 0:
+
+                    for name in data:
+
+                        if (
+                            data[name] > max([card.value for card in trump_suit_cards_done])
+                            and Card(name, self.trump) in self.cards
+                        ):
+                            card_of_suit_most_worth = Card(name, self.trump)
+
+                number_of_trump_cards_done = len(trump_suit_cards_done)
+
+            if card_of_suit_most_worth:
+                highest_trump = True
+
+            # -------------------------
+            # the card kept back for the last hand
+            # only a card that nothing can beat any more is worth keeping
+            # -------------------------
+
+            card_to_save = None
+
+            for card in self.cards:
+
+                card_is_sure = False
+
+                if card.name == "Jack":
+                    card_is_sure = True
+
+                elif (
+                    card.name == "9"
+                    and Card("Jack", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "Ace"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "10"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                    and Card("Ace", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                if (
+                    card_is_sure
+                    and (
+                        card_to_save is None
+                        or card.value > card_to_save.value
+                    )
+                ):
+                    card_to_save = card
+
+            if card_to_save is None:
+
+                usable_cards = self.cards
+
+            else:
+
+                usable_cards = [
+                    card for card in self.cards
+                    if card != card_to_save
+                ]
+
+                if len(usable_cards) == 0:
+                    usable_cards = self.cards
+
+            if len(current_hand) == 0:
+
+                last_game_suits = [card.suit for card in last_hands]
+
+                temp_cards = [
+                    card for card in usable_cards
+                    if card.name == "Jack" and card.suit not in last_game_suits
+                ]
+
+                if temp_cards.__len__() != 0:
+
+                    card_to_play = ""
+
+                    prev_cards_of_suit = 100
+
+                    for temp_card in temp_cards:
+
+                        cards_of_suit = 0
+
+                        for card in usable_cards:
+                            if card.suit == temp_card.suit:
+                                cards_of_suit += 1
+
+                        if cards_of_suit < prev_cards_of_suit:
+                            prev_cards_of_suit = cards_of_suit
+                            card_to_play = temp_card
+
+                    return self.play_card(card_to_play)
+
+                else:
+
+                    suits = [
+                        "Diamonds",
+                        "Clubs",
+                        "Spades",
+                        "Hearts"
+                    ]
+
+                    card_to_play = None
+
+                    for suit in suits:
+
+                        temp_cards = self.filter(
+                            usable_cards,
+                            mini=-1,
+                            suit=suit
+                        )
+
+                        if len(temp_cards) == 0:
+                            continue
+
+                        elif (
+                            self.check_any_card_in_cards(
+                                ["9", "Ace", "10"],
+                                suit
+                            )
+                            and len(temp_cards) <= 2
+                        ):
+                            continue
+
+                        elif (
+                            card_to_play is None
+                            or min(temp_cards) < card_to_play
+                        ):
+                            card_to_play = min(temp_cards)
+
+                    if card_to_play is None:
+
+                        card_to_play = min(
+                            self.filter(usable_cards, mini=-1)
+                        )
+
+                    return self.play_card(card_to_play)
+
+            elif len(current_hand) == 1:
+
+                current_suit = current_hand[0].suit
+
+                # the saved card is given up when it is the only card of the suit
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if (
+                    current_suit == self.trump
+                    and highest_trump
+                    and card_of_suit_most_worth in usable_cards
+                ):
+                    return self.play_card(card_of_suit_most_worth)
+
+                elif Card("Jack", current_suit) in usable_cards:
+                    return self.play_card(Card("Jack", current_suit))
+
+                else:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(min(cards))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+            else:
+
+                opponent_cards = [current_hand[0]]
+                current_suit = current_hand[0].suit
+
+                if len(current_hand) > 2:
+                    opponent_cards.append(current_hand[2])
+
+                teammate_card = current_hand[1]
+
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(max(cards))
+
+                    cards = self.filter(usable_cards, 3, 0)
+
+                    if cards:
+                        cards = sorted(cards)
+                        return self.play_card(cards[-1])
+
+                    return self.play_card(
+                        min(self.filter(usable_cards, mini=-1))
+                    )
+
+                else:
+
+                    cards_of_suit = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards_of_suit:
+
+                        if Card("Jack", current_suit) in usable_cards:
+                            return self.play_card(Card("Jack", current_suit))
+
+                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                            return self.play_card(max(cards_of_suit))
+
+                        return self.play_card(min(cards_of_suit))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+
+                                trumps_in_hand = self.filter(
+                                    current_hand,
+                                    mini=-1,
+                                    suit=self.trump
+                                )
+
+                                if trumps_in_hand:
+                                    return self.play_card(max(cards))
+
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+        # =========================
+        # Fifth,Sixth,Seventh hand
+        # =========================
+
+        elif len(last_hands) == 4 or len(last_hands) == 5 or len(last_hands) == 6:
+
+            if len(self.cards) == 1:
+                return self.play_card(self.cards[0])
+
+            card_of_suit_most_worth = None
+            highest_trump = False
+
+            if self.trump:
+
+                trump_suit_cards_done = self.filter(
+                    game.played_hands,
+                    mini=-1,
+                    suit=self.trump
+                )
+
+                if len(trump_suit_cards_done) != 0:
+
+                    for name in data:
+
+                        if (
+                            data[name] > max([card.value for card in trump_suit_cards_done])
+                            and Card(name, self.trump) in self.cards
+                        ):
+                            card_of_suit_most_worth = Card(name, self.trump)
+
+                number_of_trump_cards_done = len(trump_suit_cards_done)
+
+            if card_of_suit_most_worth:
+                highest_trump = True
+
+            # -------------------------
+            # the card kept back for the last hand
+            # only a card that nothing can beat any more is worth keeping,
+            # and only when something else is left to play instead
+            # -------------------------
+
+            card_to_save = None
+
+            for card in self.cards:
+
+                card_is_sure = False
+
+                if card.name == "Jack":
+                    card_is_sure = True
+
+                elif (
+                    card.name == "9"
+                    and Card("Jack", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "Ace"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                elif (
+                    card.name == "10"
+                    and Card("Jack", card.suit) in game.played_hands
+                    and Card("9", card.suit) in game.played_hands
+                    and Card("Ace", card.suit) in game.played_hands
+                ):
+                    card_is_sure = True
+
+                if (
+                    card_is_sure
+                    and (
+                        card_to_save is None
+                        or card.value > card_to_save.value
+                    )
+                ):
+                    card_to_save = card
+
+            if card_to_save is None:
+
+                usable_cards = self.cards
+
+            else:
+
+                usable_cards = [
+                    card for card in self.cards
+                    if card != card_to_save
+                ]
+
+                if len(usable_cards) == 0:
+                    usable_cards = self.cards
+
+            if len(current_hand) == 0:
+
+                last_game_suits = [card.suit for card in last_hands]
+
+                temp_cards = [
+                    card for card in usable_cards
+                    if card.name == "Jack" and card.suit not in last_game_suits
+                ]
+
+                if temp_cards.__len__() != 0:
+
+                    card_to_play = ""
+
+                    prev_cards_of_suit = 100
+
+                    for temp_card in temp_cards:
+
+                        cards_of_suit = 0
+
+                        for card in usable_cards:
+                            if card.suit == temp_card.suit:
+                                cards_of_suit += 1
+
+                        if cards_of_suit < prev_cards_of_suit:
+                            prev_cards_of_suit = cards_of_suit
+                            card_to_play = temp_card
+
+                    return self.play_card(card_to_play)
+
+                else:
+
+                    suits = [
+                        "Diamonds",
+                        "Clubs",
+                        "Spades",
+                        "Hearts"
+                    ]
+
+                    card_to_play = None
+
+                    for suit in suits:
+
+                        temp_cards = self.filter(
+                            usable_cards,
+                            mini=-1,
+                            suit=suit
+                        )
+
+                        if len(temp_cards) == 0:
+                            continue
+
+                        elif (
+                            self.check_any_card_in_cards(
+                                ["9", "Ace", "10"],
+                                suit
+                            )
+                            and len(temp_cards) <= 2
+                        ):
+                            continue
+
+                        elif (
+                            card_to_play is None
+                            or min(temp_cards) < card_to_play
+                        ):
+                            card_to_play = min(temp_cards)
+
+                    if card_to_play is None:
+
+                        card_to_play = min(
+                            self.filter(usable_cards, mini=-1)
+                        )
+
+                    return self.play_card(card_to_play)
+
+            elif len(current_hand) == 1:
+
+                current_suit = current_hand[0].suit
+
+                # the saved card is given up when it is the only card of the suit
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if (
+                    current_suit == self.trump
+                    and highest_trump
+                    and card_of_suit_most_worth in usable_cards
+                ):
+                    return self.play_card(card_of_suit_most_worth)
+
+                elif Card("Jack", current_suit) in usable_cards:
+                    return self.play_card(Card("Jack", current_suit))
+
+                else:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(min(cards))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+            else:
+
+                opponent_cards = [current_hand[0]]
+                current_suit = current_hand[0].suit
+
+                if len(current_hand) > 2:
+                    opponent_cards.append(current_hand[2])
+
+                teammate_card = current_hand[1]
+
+                if (
+                    len(self.filter(usable_cards, mini=-1, suit=current_suit)) == 0
+                    and len(self.filter(self.cards, mini=-1, suit=current_suit)) != 0
+                ):
+                    usable_cards = self.cards
+
+                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+
+                    cards = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards:
+                        return self.play_card(max(cards))
+
+                    cards = self.filter(usable_cards, 3, 0)
+
+                    if cards:
+                        cards = sorted(cards)
+                        return self.play_card(cards[-1])
+
+                    return self.play_card(
+                        min(self.filter(usable_cards, mini=-1))
+                    )
+
+                else:
+
+                    cards_of_suit = self.filter(usable_cards, mini=-1, suit=current_suit)
+
+                    if cards_of_suit:
+
+                        if Card("Jack", current_suit) in usable_cards:
+                            return self.play_card(Card("Jack", current_suit))
+
+                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                            return self.play_card(max(cards_of_suit))
+
+                        return self.play_card(min(cards_of_suit))
+
+                    else:
+
+                        if not self.trump and sum(current_hand) > 2:
+                            self.trump = game.dig()
+
+                        if self.trump:
+
+                            cards = self.filter(usable_cards, mini=-1, suit=self.trump)
+
+                            if cards:
+
+                                trumps_in_hand = self.filter(
+                                    current_hand,
+                                    mini=-1,
+                                    suit=self.trump
+                                )
+
+                                if trumps_in_hand:
+                                    return self.play_card(max(cards))
+
+                                return self.play_card(min(cards))
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                usable_cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(usable_cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+
+
+        # =========================
+        # Last hand
+        # =========================
+
+        else:
+
+            if len(current_hand) == 0:
+
+                temp_cards = [
+                    card for card in self.cards
+                    if card.name == "Jack"
+                ]
+
+                if temp_cards.__len__() != 0:
+                    return self.play_card(max(temp_cards))
+
+                if self.trump:
+
+                    cards = self.filter(self.cards, mini=-1, suit=self.trump)
+
+                    if cards:
+                        return self.play_card(max(cards))
+
+                return self.play_card(
+                    max(self.filter(self.cards, mini=-1))
+                )
+
+            else:
+
+                current_suit = current_hand[0].suit
+                cards_of_suit = self.filter(self.cards, mini=-1, suit=current_suit)
+
+                teammate_card = None
+
+                if len(current_hand) > 1:
+                    teammate_card = current_hand[1]
+
+                if cards_of_suit:
+
+                    if (
+                        teammate_card
+                        and max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value
+                        and teammate_card.suit == current_suit
+                    ):
+                        return self.play_card(max(cards_of_suit))
+
+                    if Card("Jack", current_suit) in self.cards:
+                        return self.play_card(Card("Jack", current_suit))
+
+                    if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                        return self.play_card(max(cards_of_suit))
+
+                    return self.play_card(min(cards_of_suit))
+
+                else:
+
+                    if not self.trump and sum(current_hand) > 2:
+                        self.trump = game.dig()
+
+                    if self.trump:
+
+                        cards = self.filter(self.cards, mini=-1, suit=self.trump)
+
+                        if cards:
+
+                            trumps_in_hand = self.filter(
+                                current_hand,
+                                mini=-1,
+                                suit=self.trump
+                            )
+
+                            if trumps_in_hand:
+                                return self.play_card(max(cards))
+
+                            return self.play_card(min(cards))
+
+                    return self.play_card(
+                        min(self.filter(self.cards, mini=-1))
+                    )
                 
     
     def play_card(self, card):
