@@ -15,12 +15,14 @@ class Game:
         self.cards = cards
         self.all_cards = list(cards)
         self.played_hands = []
+        self.is_digged = False
 
 
     def register_trump(self,trump):
         self.trump = trump
 
     def dig(self):
+        self.is_digged = True
         return self.trump
 
     def play_hand(self, hand):

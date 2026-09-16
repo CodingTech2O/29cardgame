@@ -287,12 +287,23 @@ class Bot:
                             if card == Card("Jack",current_suit):
                                 return self.play_card(card)
 
+
+
                     else:
                         cards_least_worth = min(self.filter(self.cards,suit=current_suit))
 
                         for card in self.cards:
                             if card.value == cards_least_worth:
                                 return self.play_card(card)
+                        if sum(current_hand) <= 3:
+                            self.trump = game.dig()
+                            cards = self.filter(self.cards,suit=self.trump)
+                            if cards:
+                                cards_with_min_value = min(cards)
+                                for card in cards:
+                                    if card.value == cards_with_min_value:
+                                        return self.play_card(card)
+
 
                         suits = [
                             "Diamonds",
@@ -545,15 +556,282 @@ class Bot:
                 
                     return self.play_card(card_to_play)                    
             elif len(current_hand) == 1:
-               pass 
-                                
-                                                        
+                current_suit = current_hand[0].suit
+                if current_suit == self.trump and highest_trump:
+                    return self.play_card(card_of_suit_most_worth)
+                
+                elif self.check_if_card_in_cards("Jack",current_suit):
+                    return self.play_card(Card("Jack", current_suit))
+                else:
+                    cards = self.filter(self.cards,suit=current_suit)
+                    if cards:
+                        cards_with_min_value = min(cards)
+                        for card in cards:
+                            if card.value == cards_with_min_value:
+                                return self.play_card(card)
+                    elif sum(current_hand) <= 3:
+                        self.trump = game.dig()
+                        cards = self.filter(self.cards,suit=self.trump)
+                        if cards:
+                            cards_with_min_value = min(cards)
+                            for card in cards:
+                                if card.value == cards_with_min_value:
+                                    return self.play_card(card)
+                    else:
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+                        
+                        card_to_play = None
+                        
+                        for suit in suits:
+                        
+                            temp_cards = self.filter(
+                                self.cards,
+                                mini=-1,
+                                suit=suit
+                            )
+                        
+                            if len(temp_cards) == 0:
+                                continue
+                        
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+                        
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+                        
+                        if card_to_play is None:
+                        
+                            card_to_play = min(
+                                self.filter(self.cards, mini=-1)
+                            )
+                        
+                        return self.play_card(card_to_play)
+            else:
+                opponent_cards = [current_hand[0]]
+                current_suit = current_hand[0].suit
 
+                if len(current_hand) > 2:
+                    opponent_cards.append(current_hand[2])
+
+                teammate_card = current_hand[1]
+
+                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+
+                    if teammate_card.name == "Jack":
+                        cards_most_worth = max(self.filter(self.cards,suit=current_suit))
+
+                        for card in self.cards:
+                            if card.value == cards_most_worth:
+                                return self.play_card(card)
+
+                        cards = self.filter(self.cards,3,0)
+                        cards = sorted(cards)
+                        return self.play_card(cards[-1])
+
+                    elif Card("Jack",current_suit) in self.cards:
+                        for card in self.cards:
+                            if card == Card("Jack",current_suit):
+                                return self.play_card(card)
+
+
+
+                    else:
+                        cards_least_worth = min(self.filter(self.cards,suit=current_suit))
+
+                        for card in self.cards:
+                            if card.value == cards_least_worth:
+                                return self.play_card(card)
+                        if sum(current_hand) <= 3:
+                            self.trump = game.dig()
+                            cards = self.filter(self.cards,suit=self.trump)
+                            if cards:
+                                cards_with_min_value = min(cards)
+                                for card in cards:
+                                    if card.value == cards_with_min_value:
+                                        return self.play_card(card)
+
+
+                        suits = [
+                            "Diamonds",
+                            "Clubs",
+                            "Spades",
+                            "Hearts"
+                        ]
+
+                        card_to_play = None
+
+                        for suit in suits:
+
+                            temp_cards = self.filter(
+                                self.cards,
+                                mini=-1,
+                                suit=suit
+                            )
+
+                            if len(temp_cards) == 0:
+                                continue
+
+                            elif (
+                                self.check_any_card_in_cards(
+                                    ["9", "Ace", "10"],
+                                    suit
+                                )
+                                and len(temp_cards) <= 2
+                            ):
+                                continue
+
+                            elif (
+                                card_to_play is None
+                                or min(temp_cards) < card_to_play
+                            ):
+                                card_to_play = min(temp_cards)
+
+                        if card_to_play is None:
+
+                            card_to_play = min(
+                                self.filter(self.cards, mini=-1)
+                            )
+
+                        return self.play_card(card_to_play)
+
+                else:
+                    check_trump = self.filter(self.cards,suit=self.trump)
+                    if check_trump:
+                        cards_of_suit = self.filter(self.cards,suit=current_suit)
+                        if cards_of_suit:
+                            for card in cards:
+                                if card.value == min(cards_of_suit):
+                                    return self.play_card(card)
+
+
+                        else:
+                            cards_least_worth = min(self.filter(self.cards,suit=current_suit))
+
+                            for card in self.cards:
+                                if card.value == cards_least_worth:
+                                    return self.play_card(card)
+
+                            suits = [
+                                "Diamonds",
+                                "Clubs",
+                                "Spades",
+                                "Hearts"
+                            ]
+
+                            card_to_play = None
+
+                            for suit in suits:
+
+                                temp_cards = self.filter(
+                                    self.cards,
+                                    mini=-1,
+                                    suit=suit
+                                )
+
+                                if len(temp_cards) == 0:
+                                    continue
+
+                                elif (
+                                    self.check_any_card_in_cards(
+                                        ["9", "Ace", "10"],
+                                        suit
+                                    )
+                                    and len(temp_cards) <= 2
+                                ):
+                                    continue
+
+                                elif (
+                                    card_to_play is None
+                                    or min(temp_cards) < card_to_play
+                                ):
+                                    card_to_play = min(temp_cards)
+
+                            if card_to_play is None:
+
+                                card_to_play = min(
+                                    self.filter(self.cards, mini=-1)
+                                )
+
+                            return self.play_card(card_to_play)
+
+                    else:
+                        if Card("Jack",current_suit) in self.cards:
+                            for card in self.cards:
+                                if card == Card("Jack",current_suit):
+                                    return self.play_card(card)
+                        else:
+                            if cards_of_suit:
+                                for card in cards:
+                                    if card.value == min(cards_of_suit):
+                                        return self.play_card(card)
+                            
+                            
+                            else:
+                                cards_least_worth = min(self.filter(self.cards,suit=current_suit))
+                            
+                                for card in self.cards:
+                                    if card.value == cards_least_worth:
+                                        return self.play_card(card)
+                            
+                                suits = [
+                                    "Diamonds",
+                                    "Clubs",
+                                    "Spades",
+                                    "Hearts"
+                                ]
+                            
+                                card_to_play = None
+                            
+                                for suit in suits:
+                            
+                                    temp_cards = self.filter(
+                                        self.cards,
+                                        mini=-1,
+                                        suit=suit
+                                    )
+                            
+                                    if len(temp_cards) == 0:
+                                        continue
+                            
+                                    elif (
+                                        self.check_any_card_in_cards(
+                                            ["9", "Ace", "10"],
+                                            suit
+                                        )
+                                        and len(temp_cards) <= 2
+                                    ):
+                                        continue
+                            
+                                    elif (
+                                        card_to_play is None
+                                        or min(temp_cards) < card_to_play
+                                    ):
+                                        card_to_play = min(temp_cards)
+                            
+                                if card_to_play is None:
+                            
+                                    card_to_play = min(
+                                        self.filter(self.cards, mini=-1)
+                                    )
+                            
+                                return self.play_card(card_to_play)
 
                 
-
-            
-
+    
     def play_card(self, card):
 
         for i in range(len(self.cards)):
