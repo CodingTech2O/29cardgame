@@ -1,10 +1,10 @@
-from initialize_cards.card import Card
+from algorithm.initialize_cards.card import Card
 import json
 import random
-from initialize_cards.bot import Bot
-from initialize_cards.player import Player
-from initialize_cards.helpers import take_input_from_user,display_output_to_user
-from initialize_cards.bidding import do_bidding
+from algorithm.initialize_cards.bot import Bot
+from algorithm.initialize_cards.player import Player
+from algorithm.initialize_cards.helpers import take_input_from_user,display_output_to_user
+from algorithm.initialize_cards.bidding import do_bidding
 
 
 

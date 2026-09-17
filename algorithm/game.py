@@ -1,5 +1,5 @@
 import json
-from initialize_cards.card import Card
+from algorithm.initialize_cards.card import Card
 class Game:
     def __init__(self,state):
         self.state = state
@@ -16,6 +16,7 @@ class Game:
         self.all_cards = list(cards)
         self.played_hands = []
         self.is_digged = False
+        self.players = []
 
 
     def register_trump(self,trump):

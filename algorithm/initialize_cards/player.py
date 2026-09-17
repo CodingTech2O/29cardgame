@@ -10,11 +10,29 @@ class Player:
         self.cards = cards
         self.values = [i.value for i in cards]
         self.made_trump= False
+        self.hands =[]
+        self.last_hand = False
     def next_cards(self, cards):
         self.cards.extend(cards)
         self.values = [i.value for i in self.cards]
     def make_trump(self,trump):
         self.made_trump= True
         self.trump= trump
+        
+    def play_card(self, card):
+
+        for i in range(len(self.cards)):
+
+            if card == self.cards[i]:
+
+                played_card = self.cards.pop(i)
+
+                # Keep values synchronized
+                self.values = [card.value for card in self.cards]
+
+                return played_card
+
+        return None
+
     def __repr__(self):
         return self.name
