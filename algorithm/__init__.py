@@ -24,11 +24,13 @@ def main_game():
                     for card in player.cards:
                         if card.suit == current_hand[0].suit:
                             suit_in_cards = True
+                dig = None
+
                 if not suit_in_cards:
                     if not game.is_digged:
                         dig = take_input_from_user("Do you want to dig? Y/N: ",str)
                         if dig.lower() == "y":
-                            display_output_to_user(game.dig())
+                            display_output_to_user("Trump is" + game.dig())
 
 
                 player_card = take_input_from_user("Enter card to play: ",str)
@@ -37,7 +39,7 @@ def main_game():
                     player_card.split(" of ")[0],
                     player_card.split(" of ")[1]
                 )
-                if dig and game.trump:
+                if dig and game.is_digged:
                     while dig.lower() == "y" and player_card.suit != game.trump and player.filter(player.cards,suit=game.trump):
                         display_output_to_user("You must play trump suit card!")
                         player_card = take_input_from_user("Enter card to play: ",str)
@@ -65,6 +67,7 @@ def main_game():
         display_output_to_user(player.cards)
 
         last_hands.append(current_hand)
+    display_output_to_user(game.evaluate_round_winner())
 
 
 if __name__ == "__main__":

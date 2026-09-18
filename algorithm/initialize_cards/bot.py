@@ -16,6 +16,7 @@ class Bot:
         self.trump = None
         self.hands =[]
         self.last_hand = False
+        self.bid = None
 
     def next_cards(self, cards):
         self.cards.extend(cards)
@@ -208,7 +209,7 @@ class Bot:
 
                 else:
                     if card_played.value > 2:
-                        self.trump = display_output_to_user(game.dig())
+                        self.trump = display_output_to_user("Trump is" + game.dig())
                         minimum_valued_card_value = 100
                         cards = self.filter(self.cards,suit=self.trump)
                         card_to_play = None
@@ -345,7 +346,7 @@ class Bot:
                             if card == cards_least_worth:
                                 return self.play_card(card)
                         if sum(current_hand) <= 3:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
                             cards = self.filter(self.cards,suit=self.trump)
                             if cards:
                                 cards_with_min_value = min(cards)
@@ -627,7 +628,7 @@ class Bot:
                             if card == cards_with_min_value:
                                 return self.play_card(card)
                     elif sum(current_hand) <= 3:
-                        self.trump = display_output_to_user(game.dig())
+                        self.trump = display_output_to_user("Trump is" + game.dig())
                         cards = self.filter(self.cards,suit=self.trump)
                         if cards:
                             cards_with_min_value = min(cards)
@@ -713,7 +714,7 @@ class Bot:
                             if card == cards_least_worth:
                                 return self.play_card(card)
                         if sum(current_hand) <= 3:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
                             cards = self.filter(self.cards,suit=self.trump)
                             if cards:
                                 cards_with_min_value = min(cards)
@@ -1083,7 +1084,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -1185,7 +1186,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -1432,7 +1433,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -1534,7 +1535,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -1795,7 +1796,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -1897,7 +1898,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = display_output_to_user(game.dig())
+                            self.trump = display_output_to_user("Trump is" + game.dig())
 
                         if self.trump:
 
@@ -2018,7 +2019,7 @@ class Bot:
                 else:
 
                     if not self.trump and sum(current_hand) > 2:
-                        self.trump = display_output_to_user(game.dig())
+                        self.trump = display_output_to_user("Trump is" + game.dig())
 
                     if self.trump:
 

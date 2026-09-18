@@ -12,6 +12,7 @@ class Player:
         self.made_trump= False
         self.hands =[]
         self.last_hand = False
+        self.bid = None
 
     def filter(self, cards, maxi=100, mini=0, suit=None):
         temp_cards = []

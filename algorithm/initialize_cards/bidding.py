@@ -301,7 +301,7 @@ def do_bidding(b1, b2, b3, p1):
                 "Enter your trump: ",
                 str
             )
-
+    winner[0].bid = winner[1]
     winner[0].make_trump(winner[2])
     game.register_trump(winner[2])
 
