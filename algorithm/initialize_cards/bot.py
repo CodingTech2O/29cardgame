@@ -105,7 +105,7 @@ class Bot:
                     ):
 
                         return self.play_card(
-                            min(self.filter(self.cards, suit=self.trump),default=0)
+                            min(self.filter(self.cards, suit=self.trump))
                         )
 
                 else:
@@ -342,7 +342,7 @@ class Bot:
 
 
                     else:
-                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=0)
+                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=None)
 
                         for card in self.filter(self.cards,suit=current_suit):
                             if card == cards_least_worth:
@@ -675,7 +675,7 @@ class Bot:
                 if max(self.evaluate_current_winner(current_hand)[1],default=0) == teammate_card.value and teammate_card.suit == current_suit:
 
                     if teammate_card.name == "Jack":
-                        cards_most_worth = max(self.filter(self.cards,suit=current_suit),default=0)
+                        cards_most_worth = max(self.filter(self.cards,suit=current_suit),default=None)
 
                         for card in self.cards:
                             if card == cards_most_worth:
@@ -693,7 +693,7 @@ class Bot:
 
 
                     else:
-                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=0)
+                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=None)
 
                         for card in self.cards:
                             if card == cards_least_worth:
@@ -1137,7 +1137,7 @@ class Bot:
                         return self.play_card(cards[-1])
 
                     return self.play_card(
-                        min(self.filter(usable_cards, mini=-1),default=0)
+                        min(self.filter(usable_cards, mini=-1))
                     )
 
                 else:
@@ -1488,7 +1488,7 @@ class Bot:
                         return self.play_card(cards[-1])
 
                     return self.play_card(
-                        min(self.filter(usable_cards, mini=-1),default=0)
+                        min(self.filter(usable_cards, mini=-1))
                     )
 
                 else:
@@ -1853,7 +1853,7 @@ class Bot:
                         return self.play_card(cards[-1])
 
                     return self.play_card(
-                        min(self.filter(usable_cards, mini=-1),default=0)
+                        min(self.filter(usable_cards, mini=-1))
                     )
 
                 else:
@@ -2016,7 +2016,7 @@ class Bot:
                             return self.play_card(min(cards))
 
                     return self.play_card(
-                        min(self.filter(self.cards, mini=-1),default=0)
+                        min(self.filter(self.cards, mini=-1))
                     )
                 
     
