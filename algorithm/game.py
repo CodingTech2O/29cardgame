@@ -36,8 +36,9 @@ class Game:
             if self.trump:
                 if card.suit == self.trump:
                     values.append(card.value+4)
-                else: values.append(card.value)
-            else:
+                elif cards[0].suit == card.suit:
+                    values.append(card.value)
+            elif cards[0].suit == card.suit:
                 values.append(card.value)
         max_value = max(values)
         for i in range(len(values)):
