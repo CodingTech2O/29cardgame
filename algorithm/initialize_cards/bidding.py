@@ -110,14 +110,6 @@ def decide_bid(bot, last_bid=0):
     elif number_of_strong_suit_cards == 2:
         possible_bid = [i for i in range(MIN_BID, 20)]
 
-    ## Flat hand (no real trump length) ##
-    elif number_of_strong_suit_cards == 1 and total_cards_points < 8:
-        possible_bid = [i for i in range(MIN_BID, 19)]
-    elif number_of_strong_suit_cards == 1 and total_cards_points < 10:
-        possible_bid = [i for i in range(MIN_BID, 20)]
-    elif number_of_strong_suit_cards == 1:
-        possible_bid = [i for i in range(MIN_BID, 21)]
-
     # a bid must beat the current one
     possible_bid = [b for b in possible_bid if b > last_bid]
 
