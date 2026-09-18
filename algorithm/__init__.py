@@ -24,14 +24,29 @@ def main_game():
                     for card in player.cards:
                         if card.suit == current_hand[0].suit:
                             suit_in_cards = True
-                player_card = take_input_from_user("Enter card to play: ",str)
+                if not suit_in_cards:
+                    if not game.is_digged:
+                        dig = take_input_from_user("Do you want to dig? Y/N: ",str)
+                        if dig.lower() == "y":
+                            display_output_to_user(game.dig())
 
+
+                player_card = take_input_from_user("Enter card to play: ",str)
 
                 player_card = Card(
                     player_card.split(" of ")[0],
                     player_card.split(" of ")[1]
                 )
-                        
+                if dig and game.trump:
+                    while dig.lower() == "y" and player_card.suit != game.trump and player.filter(player.cards,suit=game.trump):
+                        display_output_to_user("You must play trump suit card!")
+                        player_card = take_input_from_user("Enter card to play: ",str)
+
+                        player_card = Card(
+                            player_card.split(" of ")[0],
+                            player_card.split(" of ")[1]
+                        )
+
 
                 card = p.play_card(player_card)
 
@@ -45,10 +60,10 @@ def main_game():
                 display_output_to_user(card)
 
             current_hand.append(card)
-
+        game.decide_new_order(current_hand)
         game.play_hand(current_hand)
         display_output_to_user(player.cards)
-        print(current_hand,last_hands)
+
         last_hands.append(current_hand)
 
 

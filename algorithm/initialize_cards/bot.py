@@ -208,7 +208,7 @@ class Bot:
 
                 else:
                     if card_played.value > 2:
-                        self.trump = print(game.dig)
+                        self.trump = display_output_to_user(game.dig())
                         minimum_valued_card_value = 100
                         cards = self.filter(self.cards,suit=self.trump)
                         card_to_play = None
@@ -345,7 +345,7 @@ class Bot:
                             if card == cards_least_worth:
                                 return self.play_card(card)
                         if sum(current_hand) <= 3:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
                             cards = self.filter(self.cards,suit=self.trump)
                             if cards:
                                 cards_with_min_value = min(cards)
@@ -408,11 +408,13 @@ class Bot:
 
 
                         else:
-                            cards_least_worth = min(self.filter(self.cards,suit=current_suit))
+                            if self.filter(self.cards,suit=current_suit):
+                                cards_least_worth = min(self.filter(self.cards,suit=current_suit))
 
-                            for card in self.cards:
-                                if card == cards_least_worth:
-                                    return self.play_card(card)
+                                for card in self.cards:
+                                    if card == cards_least_worth:
+                                        return self.play_card(card)
+
 
                             suits = [
                                 "Diamonds",
@@ -526,9 +528,12 @@ class Bot:
         elif len(last_hands) == 1:
             if self.trump:
                 trump_suit_cards_done = self.filter(game.played_hands, suit=self.trump)
-                for name in data:
-                    if data[name] > max([card.value for card in trump_suit_cards_done]) and Card(name, self.trump) in self.cards:
-                        card_of_suit_most_worth = Card(name, self.trump)
+
+                if trump_suit_cards_done:
+                    for name in data:
+                        if data[name] > max(card.value for card in trump_suit_cards_done) and Card(name, self.trump) in self.cards:
+                            card_of_suit_most_worth = Card(name, self.trump)
+
                 number_of_trump_cards_done = len(trump_suit_cards_done)
             try:
                 if card_of_suit_most_worth:
@@ -622,7 +627,7 @@ class Bot:
                             if card == cards_with_min_value:
                                 return self.play_card(card)
                     elif sum(current_hand) <= 3:
-                        self.trump = print(game.dig)
+                        self.trump = display_output_to_user(game.dig())
                         cards = self.filter(self.cards,suit=self.trump)
                         if cards:
                             cards_with_min_value = min(cards)
@@ -681,10 +686,10 @@ class Bot:
 
                 teammate_card = current_hand[1]
 
-                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+                if max(self.evaluate_current_winner(current_hand)[1],default=0) == teammate_card.value and teammate_card.suit == current_suit:
 
                     if teammate_card.name == "Jack":
-                        cards_most_worth = max(self.filter(self.cards,suit=current_suit))
+                        cards_most_worth = max(self.filter(self.cards,suit=current_suit),default=0)
 
                         for card in self.cards:
                             if card == cards_most_worth:
@@ -708,7 +713,7 @@ class Bot:
                             if card == cards_least_worth:
                                 return self.play_card(card)
                         if sum(current_hand) <= 3:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
                             cards = self.filter(self.cards,suit=self.trump)
                             if cards:
                                 cards_with_min_value = min(cards)
@@ -765,7 +770,7 @@ class Bot:
                     if check_trump:
                         cards_of_suit = self.filter(self.cards,suit=current_suit)
                         if cards_of_suit:
-                            for card in cards:
+                            for card in self.cards:
                                 if card == min(cards_of_suit):
                                     return self.play_card(card)
 
@@ -905,7 +910,7 @@ class Bot:
                     for name in data:
 
                         if (
-                            data[name] > max([card.value for card in trump_suit_cards_done])
+                            data[name] > max([card.value for card in trump_suit_cards_done],default=0)
                             and Card(name, self.trump) in self.cards
                         ):
                             card_of_suit_most_worth = Card(name, self.trump)
@@ -1078,7 +1083,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -1146,7 +1151,7 @@ class Bot:
                 ):
                     usable_cards = self.cards
 
-                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+                if max(self.evaluate_current_winner(current_hand)[1],default=0) == teammate_card.value and teammate_card.suit == current_suit:
 
                     cards = self.filter(usable_cards, mini=-1, suit=current_suit)
 
@@ -1180,7 +1185,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -1427,7 +1432,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -1529,7 +1534,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -1790,7 +1795,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -1892,7 +1897,7 @@ class Bot:
                     else:
 
                         if not self.trump and sum(current_hand) > 2:
-                            self.trump = print(game.dig)
+                            self.trump = display_output_to_user(game.dig())
 
                         if self.trump:
 
@@ -2013,7 +2018,7 @@ class Bot:
                 else:
 
                     if not self.trump and sum(current_hand) > 2:
-                        self.trump = print(game.dig)
+                        self.trump = display_output_to_user(game.dig())
 
                     if self.trump:
 

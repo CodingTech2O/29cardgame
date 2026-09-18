@@ -12,6 +12,18 @@ class Player:
         self.made_trump= False
         self.hands =[]
         self.last_hand = False
+
+    def filter(self, cards, maxi=100, mini=0, suit=None):
+        temp_cards = []
+
+        for card in cards:
+            if mini < card.value < maxi:
+                if suit is None or card.suit == suit:
+                    temp_cards.append(card)
+
+        return temp_cards
+
+    
     def next_cards(self, cards):
         self.cards.extend(cards)
         self.values = [i.value for i in self.cards]

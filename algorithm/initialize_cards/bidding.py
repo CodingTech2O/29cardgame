@@ -1,6 +1,6 @@
 import json
-from initialize_cards.helpers import take_input_from_user,display_output_to_user
-from game import game
+from algorithm.initialize_cards.helpers import take_input_from_user,display_output_to_user
+from algorithm.game import game
 
 
 with open("data/card_value.json", "r") as f:

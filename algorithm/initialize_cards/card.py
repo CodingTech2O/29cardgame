@@ -19,9 +19,20 @@ class Card():
             return True
         return False
     def __add__(self, other):
-        return self.value+other.value
+        if isinstance(other, (int, float)):
+            return self.value + other
+        return self.value + other.value
+
+    def __radd__(self, other):
+        return other + self.value
+
     def __sub__(self, other):
+        if isinstance(other, (int, float)):
+            return self.value - other
         return self.value - other.value
+
+    def __rsub__(self, other):
+        return other - self.value
     def __lt__(self, other):
         return self.value < other.value
     def __gt__(self, other):
