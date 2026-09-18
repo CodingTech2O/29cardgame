@@ -1,6 +1,12 @@
 from algorithm.initialize_cards import initialize_cards,take_input_from_user,display_output_to_user,Bot,Player,Card
 from algorithm.game import game, SUITS
 
+
+def should_offer_dig(is_leading, suit_in_cards, is_digged):
+    """Only offer the dig when genuinely void in the lead suit, not leading."""
+    return not is_leading and not suit_in_cards and not is_digged
+
+
 def main_game():
     bots, player = initialize_cards()
     game.state = "Playing"
@@ -25,7 +31,7 @@ def main_game():
                 )
 
                 dig = None
-                if not is_leading and not suit_in_cards and not game.is_digged:
+                if should_offer_dig(is_leading, suit_in_cards, game.is_digged):
                     dig = take_input_from_user("Do you want to dig? Y/N: ",str)
                     if dig.lower() == "y":
                         display_output_to_user("Trump is" + game.dig())
