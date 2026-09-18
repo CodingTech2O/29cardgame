@@ -170,7 +170,7 @@ class Bot:
 
             elif len(current_hand) == 1:
                 card_played = current_hand[0]
-                cards = self.filter(self.cards,suit=card_played.suit)
+                cards = self.filter(self.cards,mini=-1,suit=card_played.suit)
 
                 if cards:
                     minimum_valued_card_value = 100
@@ -310,11 +310,11 @@ class Bot:
                 if game.is_winning(current_hand, 1):
 
                     if teammate_card.name == "Jack":
-                        if self.filter(self.cards,suit=current_suit):
-                            cards_most_worth = max(self.filter(self.cards,suit=current_suit))
+                        if self.filter(self.cards,mini=-1,suit=current_suit):
+                            cards_most_worth = max(self.filter(self.cards,mini=-1,suit=current_suit))
                         
 
-                        for card in self.filter(self.cards,suit=current_suit):
+                        for card in self.filter(self.cards,mini=-1,suit=current_suit):
                             if card == cards_most_worth:
                                 return self.play_card(card)
 
@@ -330,9 +330,9 @@ class Bot:
 
 
                     else:
-                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=None)
+                        cards_least_worth = min(self.filter(self.cards,mini=-1,suit=current_suit),default=None)
 
-                        for card in self.filter(self.cards,suit=current_suit):
+                        for card in self.filter(self.cards,mini=-1,suit=current_suit):
                             if card == cards_least_worth:
                                 return self.play_card(card)
                         if sum(current_hand) <= 3:
@@ -393,7 +393,7 @@ class Bot:
                     check_trump = self.filter(self.cards, suit=self.trump)
 
                     if check_trump:
-                        cards_of_suit = self.filter(self.cards, suit=current_suit)
+                        cards_of_suit = self.filter(self.cards, mini=-1, suit=current_suit)
 
                         if cards_of_suit:
                             for card in cards_of_suit:
@@ -442,7 +442,7 @@ class Bot:
                             return self.play_card(card_to_play)
 
                     else:
-                        cards_of_suit = self.filter(self.cards, suit=current_suit)
+                        cards_of_suit = self.filter(self.cards, mini=-1, suit=current_suit)
 
                         if Card("Jack", current_suit) in self.cards:
                             for card in self.cards:
@@ -593,7 +593,7 @@ class Bot:
                 elif self.check_if_card_in_cards("Jack",current_suit):
                     return self.play_card(Card("Jack", current_suit))
                 else:
-                    cards = self.filter(self.cards,suit=current_suit)
+                    cards = self.filter(self.cards,mini=-1,suit=current_suit)
                     if cards:
                         cards_with_min_value = min(cards)
                         for card in cards:
@@ -668,7 +668,7 @@ class Bot:
                 if game.is_winning(current_hand, 1):
 
                     if teammate_card.name == "Jack":
-                        cards_most_worth = max(self.filter(self.cards,suit=current_suit),default=None)
+                        cards_most_worth = max(self.filter(self.cards,mini=-1,suit=current_suit),default=None)
 
                         for card in self.cards:
                             if card == cards_most_worth:
@@ -686,7 +686,7 @@ class Bot:
 
 
                     else:
-                        cards_least_worth = min(self.filter(self.cards,suit=current_suit),default=None)
+                        cards_least_worth = min(self.filter(self.cards,mini=-1,suit=current_suit),default=None)
 
                         for card in self.cards:
                             if card == cards_least_worth:
@@ -749,7 +749,7 @@ class Bot:
                     check_trump = self.filter(self.cards, suit=self.trump)
 
                     if check_trump:
-                        cards_of_suit = self.filter(self.cards, suit=current_suit)
+                        cards_of_suit = self.filter(self.cards, mini=-1, suit=current_suit)
 
                         if cards_of_suit:
                             for card in cards_of_suit:
@@ -798,7 +798,7 @@ class Bot:
                             return self.play_card(card_to_play)
 
                     else:
-                        cards_of_suit = self.filter(self.cards, suit=current_suit)
+                        cards_of_suit = self.filter(self.cards, mini=-1, suit=current_suit)
 
                         if Card("Jack", current_suit) in self.cards:
                             for card in self.cards:

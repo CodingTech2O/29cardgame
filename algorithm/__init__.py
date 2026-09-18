@@ -1,5 +1,5 @@
 from algorithm.initialize_cards import initialize_cards,take_input_from_user,display_output_to_user,Bot,Player,Card
-from algorithm.game import game
+from algorithm.game import game, SUITS
 
 def main_game():
     bots, player = initialize_cards()
@@ -17,52 +17,64 @@ def main_game():
 
         for p in game.players:
             if type(p) == Player:
-                
 
-                if len(current_hand) != 0:
-                    suit_in_cards = False
-                    for card in player.cards:
-                        if card.suit == current_hand[0].suit:
-                            suit_in_cards = True
-                dig = None
-
-                if not suit_in_cards:
-                    if not game.is_digged:
-                        dig = take_input_from_user("Do you want to dig? Y/N: ",str)
-                        if dig.lower() == "y":
-                            display_output_to_user("Trump is" + game.dig())
-
-
-                player_card = take_input_from_user("Enter card to play: ",str)
-
-                player_card = Card(
-                    player_card.split(" of ")[0],
-                    player_card.split(" of ")[1]
+                is_leading = len(current_hand) == 0
+                lead_suit = current_hand[0].suit if not is_leading else None
+                suit_in_cards = is_leading or any(
+                    card.suit == lead_suit for card in player.cards
                 )
-                if dig and game.is_digged:
-                    while dig.lower() == "y" and player_card.suit != game.trump and player.filter(player.cards,suit=game.trump):
-                        display_output_to_user("You must play trump suit card!")
-                        player_card = take_input_from_user("Enter card to play: ",str)
 
-                        player_card = Card(
-                            player_card.split(" of ")[0],
-                            player_card.split(" of ")[1]
-                        )
-
+                dig = None
+                if not is_leading and not suit_in_cards and not game.is_digged:
+                    dig = take_input_from_user("Do you want to dig? Y/N: ",str)
+                    if dig.lower() == "y":
+                        display_output_to_user("Trump is" + game.dig())
 
                 while True:
+                    raw_card = take_input_from_user("Enter card to play: ",str)
+
+                    if " of " not in raw_card:
+                        display_output_to_user(
+                            "Please enter a card as '<rank> of <suit>', e.g. 'Jack of Spades'."
+                        )
+                        continue
+
+                    name, suit = raw_card.split(" of ", 1)
+
+                    if suit not in SUITS:
+                        display_output_to_user(f"'{suit}' is not a valid suit.")
+                        continue
+
+                    try:
+                        player_card = Card(name, suit)
+                    except KeyError:
+                        display_output_to_user(f"'{name}' is not a valid rank.")
+                        continue
+
+                    if player_card not in player.cards:
+                        display_output_to_user(f"{player_card} is not in your hand.")
+                        continue
+
+                    if (
+                        dig and dig.lower() == "y" and game.is_digged
+                        and player_card.suit != game.trump
+                        and player.filter(player.cards, suit=game.trump)
+                    ):
+                        display_output_to_user("You must play trump suit card!")
+                        continue
+
+                    if not is_leading and suit_in_cards and player_card.suit != lead_suit:
+                        display_output_to_user(
+                            f"You must follow suit ({lead_suit}) since you have it."
+                        )
+                        continue
+
                     try:
                         card = p.play_card(player_card)
                         break
                     except ValueError:
                         display_output_to_user(
                             f"{player_card} is not in your hand. Enter a card from your hand."
-                        )
-                        player_card = take_input_from_user("Enter card to play: ",str)
-
-                        player_card = Card(
-                            player_card.split(" of ")[0],
-                            player_card.split(" of ")[1]
                         )
 
             else:
