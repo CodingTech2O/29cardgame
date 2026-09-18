@@ -12,12 +12,15 @@ class Card():
     def __repr__(self):
         return f"{self.name} of {self.suit}"
     def __eq__(self, other):
-        if type(other) == int or type(other) == float:
-            if self.value == other:
-                return True
-        if self.suit == other.suit and self.name == other.name:
-            return True
-        return False
+        if isinstance(other, (int, float)):
+            return self.value == other
+        if isinstance(other, Card):
+            return self.suit == other.suit and self.name == other.name
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.name, self.suit))
+
     def __add__(self, other):
         if isinstance(other, (int, float)):
             return self.value + other
@@ -37,4 +40,8 @@ class Card():
         return self.value < other.value
     def __gt__(self, other):
         return self.value > other.value
+    def __le__(self, other):
+        return self.value <= other.value
+    def __ge__(self, other):
+        return self.value >= other.value
 
