@@ -2033,4 +2033,4 @@ class Bot:
 
                 return played_card
 
-        return None
+        raise ValueError(f"{card} is not in hand: {self.cards}")

@@ -50,7 +50,20 @@ def main_game():
                         )
 
 
-                card = p.play_card(player_card)
+                while True:
+                    try:
+                        card = p.play_card(player_card)
+                        break
+                    except ValueError:
+                        display_output_to_user(
+                            f"{player_card} is not in your hand. Enter a card from your hand."
+                        )
+                        player_card = take_input_from_user("Enter card to play: ",str)
+
+                        player_card = Card(
+                            player_card.split(" of ")[0],
+                            player_card.split(" of ")[1]
+                        )
 
             else:
                 card = p.decide_card_to_play(

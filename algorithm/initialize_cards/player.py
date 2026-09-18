@@ -45,7 +45,7 @@ class Player:
 
                 return played_card
 
-        return None
+        raise ValueError(f"{card} is not in hand: {self.cards}")
 
     def __repr__(self):
         return self.name
