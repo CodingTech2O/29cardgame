@@ -69,21 +69,9 @@ class Bot:
 
         return temp_cards
 
-    def evaluate_current_winner(self,cards):
-        values = []
-        for card in cards:
-            if self.trump:
-                if card.suit == self.trump:
-                    values.append(card.value+4)
-                else: values.append(card.value)
-            else:
-                values.append(card.value)
-
-        return list([cards,values])
-        
-
-    
     def decide_card_to_play(self,game, current_hand=[], last_hands=[]):
+        # TODO: this function is ~1,935 lines with ~85% duplication across its
+        # branches. Needs a test suite in place before it's safe to refactor.
 
         # =========================
         # First Round
@@ -319,7 +307,7 @@ class Bot:
 
                 teammate_card = current_hand[1]
 
-                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+                if game.is_winning(current_hand, 1):
 
                     if teammate_card.name == "Jack":
                         if self.filter(self.cards,suit=current_suit):
@@ -611,7 +599,7 @@ class Bot:
                         for card in cards:
                             if card == cards_with_min_value:
                                 return self.play_card(card)
-                    elif sum(current_hand) <= 3:
+                    if sum(current_hand) <= 3:
                         display_output_to_user("Trump is")
                         self.trump = display_output_to_user(game.dig())
                         cards = self.filter(self.cards,suit=self.trump)
@@ -620,49 +608,54 @@ class Bot:
                             for card in cards:
                                 if card == cards_with_min_value:
                                     return self.play_card(card)
-                    else:
-                        suits = [
-                            "Diamonds",
-                            "Clubs",
-                            "Spades",
-                            "Hearts"
-                        ]
-                        
-                        card_to_play = None
-                        
-                        for suit in suits:
-                        
-                            temp_cards = self.filter(
-                                self.cards,
-                                mini=-1,
-                                suit=suit
+
+                    # Unconditional fallback: neither the current-suit nor
+                    # the (possibly just-dug) trump-suit lookup above found
+                    # a card to play, so fall back to the lowest-priority
+                    # suit that still has cards, exactly like the equivalent
+                    # branch in the other rounds.
+                    suits = [
+                        "Diamonds",
+                        "Clubs",
+                        "Spades",
+                        "Hearts"
+                    ]
+
+                    card_to_play = None
+
+                    for suit in suits:
+
+                        temp_cards = self.filter(
+                            self.cards,
+                            mini=-1,
+                            suit=suit
+                        )
+
+                        if len(temp_cards) == 0:
+                            continue
+
+                        elif (
+                            self.check_any_card_in_cards(
+                                ["9", "Ace", "10"],
+                                suit
                             )
-                        
-                            if len(temp_cards) == 0:
-                                continue
-                        
-                            elif (
-                                self.check_any_card_in_cards(
-                                    ["9", "Ace", "10"],
-                                    suit
-                                )
-                                and len(temp_cards) <= 2
-                            ):
-                                continue
-                        
-                            elif (
-                                card_to_play is None
-                                or min(temp_cards) < card_to_play
-                            ):
-                                card_to_play = min(temp_cards)
-                        
-                        if card_to_play is None:
-                        
-                            card_to_play = min(
-                                self.filter(self.cards, mini=-1)
-                            )
-                        
-                        return self.play_card(card_to_play)
+                            and len(temp_cards) <= 2
+                        ):
+                            continue
+
+                        elif (
+                            card_to_play is None
+                            or min(temp_cards) < card_to_play
+                        ):
+                            card_to_play = min(temp_cards)
+
+                    if card_to_play is None:
+
+                        card_to_play = min(
+                            self.filter(self.cards, mini=-1)
+                        )
+
+                    return self.play_card(card_to_play)
             else:
                 opponent_cards = [current_hand[0]]
                 current_suit = current_hand[0].suit
@@ -672,7 +665,7 @@ class Bot:
 
                 teammate_card = current_hand[1]
 
-                if max(self.evaluate_current_winner(current_hand)[1],default=0) == teammate_card.value and teammate_card.suit == current_suit:
+                if game.is_winning(current_hand, 1):
 
                     if teammate_card.name == "Jack":
                         cards_most_worth = max(self.filter(self.cards,suit=current_suit),default=None)
@@ -1123,7 +1116,7 @@ class Bot:
                 ):
                     usable_cards = self.cards
 
-                if max(self.evaluate_current_winner(current_hand)[1],default=0) == teammate_card.value and teammate_card.suit == current_suit:
+                if game.is_winning(current_hand, 1):
 
                     cards = self.filter(usable_cards, mini=-1, suit=current_suit)
 
@@ -1149,7 +1142,7 @@ class Bot:
                         if Card("Jack", current_suit) in usable_cards:
                             return self.play_card(Card("Jack", current_suit))
 
-                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                        if max(cards_of_suit).value > game.evaluate_current_winner(current_hand)[0].value:
                             return self.play_card(max(cards_of_suit))
 
                         return self.play_card(min(cards_of_suit))
@@ -1474,7 +1467,7 @@ class Bot:
                 ):
                     usable_cards = self.cards
 
-                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+                if game.is_winning(current_hand, 1):
 
                     cards = self.filter(usable_cards, mini=-1, suit=current_suit)
 
@@ -1500,7 +1493,7 @@ class Bot:
                         if Card("Jack", current_suit) in usable_cards:
                             return self.play_card(Card("Jack", current_suit))
 
-                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                        if max(cards_of_suit).value > game.evaluate_current_winner(current_hand)[0].value:
                             return self.play_card(max(cards_of_suit))
 
                         return self.play_card(min(cards_of_suit))
@@ -1839,7 +1832,7 @@ class Bot:
                 ):
                     usable_cards = self.cards
 
-                if max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value and teammate_card.suit == current_suit:
+                if game.is_winning(current_hand, 1):
 
                     cards = self.filter(usable_cards, mini=-1, suit=current_suit)
 
@@ -1865,7 +1858,7 @@ class Bot:
                         if Card("Jack", current_suit) in usable_cards:
                             return self.play_card(Card("Jack", current_suit))
 
-                        if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                        if max(cards_of_suit).value > game.evaluate_current_winner(current_hand)[0].value:
                             return self.play_card(max(cards_of_suit))
 
                         return self.play_card(min(cards_of_suit))
@@ -1977,17 +1970,13 @@ class Bot:
 
                 if cards_of_suit:
 
-                    if (
-                        teammate_card
-                        and max(self.evaluate_current_winner(current_hand)[1]) == teammate_card.value
-                        and teammate_card.suit == current_suit
-                    ):
+                    if teammate_card and game.is_winning(current_hand, 1):
                         return self.play_card(max(cards_of_suit))
 
                     if Card("Jack", current_suit) in self.cards:
                         return self.play_card(Card("Jack", current_suit))
 
-                    if max(cards_of_suit).value > max(self.evaluate_current_winner(current_hand)[1]):
+                    if max(cards_of_suit).value > game.evaluate_current_winner(current_hand)[0].value:
                         return self.play_card(max(cards_of_suit))
 
                     return self.play_card(min(cards_of_suit))
