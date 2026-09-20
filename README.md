@@ -1,111 +1,726 @@
-# 29
+# 29 Card Game
 
-A browser version of **29**, the four-player trick-taking card game. You sit opposite Bot 2 and play against Bot 1 and Bot 3, through bidding, a hidden trump suit, and eight tricks.
+A browser-based implementation of **29**, the four-player Indian trick-taking card game.
 
-![Start screen](docs/screenshots/start.png)
+Play as a human against three bots, bid for the contract, secretly choose trump, dig when necessary, and fight through eight tricks to reach your bid.
 
-![Mid-game table](docs/screenshots/play.png)
+![Start Screen](docs/screenshots/start.png)
 
-## Features
+![Gameplay](docs/screenshots/play.png)
 
-- Full round in the browser: name entry, bidding, trump selection, dig prompt, eight tricks, result.
-- Seat-based felt table: each player's card lands in front of them, with the last completed trick and its winner shown above.
-- Illegal cards are dimmed when you must follow suit.
-- **Move replay.** After every move the table replays what happened, one card at a time, so you can remember it: your card for under a second, each bot card for 2 seconds, then the trick winner. Your hand unlocks when the replay ends, and a Skip button ends it early.
-- Animated UI: cards dealt into a fanned hand, bot cards sliding in from their seats, played cards lifting off, page fade transitions, confetti on a win. All of it respects `prefers-reduced-motion`.
-- Works on phones; the hand and table scale down.
-- No build step and no front-end framework: Flask, Jinja templates, one stylesheet, and a small optional script.
+---
 
-## Quick start
+## 🎮 Features
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+* **Complete 29 round flow**
+
+  * Player name entry
+  * Bidding
+  * Secret trump selection
+  * Trump digging
+  * Eight tricks
+  * Round scoring
+
+* **🤖 Heuristic AI opponents**
+
+  * Bots evaluate their hands when bidding
+  * Bots follow suit and trump rules
+  * Bots track game state when selecting cards
+  * Bots can independently decide when to dig
+
+* **🃏 Real card gameplay**
+
+  * 32-card deck
+  * Correct 29 card ranking
+  * Follow-suit enforcement
+  * Hidden trump
+  * Last-trick bonus
+
+* **🎬 Move replay**
+
+  * Each trick is replayed card-by-card
+  * Bot moves are shown sequentially
+  * Trick winner is displayed
+  * Replay can be skipped
+
+* **✨ Animated interface**
+
+  * Cards deal into a fanned hand
+  * Cards animate from player seats
+  * Played cards lift from the hand
+  * Page transitions
+  * Win animation
+  * Respects `prefers-reduced-motion`
+
+* **📱 Responsive**
+
+  * Works on desktop and mobile
+  * Table and hand scale for smaller screens
+
+* **🖥️ Two interfaces**
+
+  * Flask browser interface
+  * Terminal interface
+  * Both use the same underlying game engine
+
+* **🧪 Automated testing**
+
+  * Unit tests
+  * Headless full-game simulation
+  * Follow-suit validation
+  * Crash detection
+
+---
+
+# 🧠 How 29 Works
+
+### Deck
+
+The game uses **32 cards**.
+
+Cards are ranked from highest to lowest:
+
+```text
+Jack > 9 > Ace > 10 > King > Queen > 8 > 7
+```
+
+Card points:
+
+| Card  | Points |
+| ----- | -----: |
+| Jack  |      3 |
+| 9     |      2 |
+| Ace   |      1 |
+| 10    |      1 |
+| King  |      0 |
+| Queen |      0 |
+| 8     |      0 |
+| 7     |      0 |
+
+The cards contain **28 points** in total.
+
+The team that wins the final trick receives **1 additional point**, giving the game its name:
+
+> **29 points**
+
+---
+
+## 👥 Teams
+
+The four players are divided into two teams:
+
+```text
+You       + Bot 2
+   VS
+Bot 1     + Bot 3
+```
+
+Partners sit opposite each other.
+
+---
+
+## 💰 Bidding
+
+Each player receives four cards before the auction.
+
+Players bid based on the strength of their hand.
+
+The highest bidder:
+
+1. Wins the contract
+2. Chooses the trump suit
+3. Receives the remaining four cards
+
+The human player can either:
+
+```text
+Pass
+```
+
+or make a bid greater than the current bid.
+
+---
+
+## 🃏 Hidden Trump
+
+Trump remains hidden until somebody decides to **dig**.
+
+If a player:
+
+* cannot follow the lead suit,
+* has not yet seen trump,
+* and chooses to dig,
+
+the trump suit becomes visible to everyone.
+
+From that point onward:
+
+```text
+Trump > Lead Suit
+```
+
+If the player digs and holds a trump card, they must play trump on that turn.
+
+Bots can also independently decide to dig.
+
+---
+
+## 🏆 Tricks
+
+Players must follow the lead suit whenever possible.
+
+If trump has been revealed:
+
+```text
+Trump card
+    ↓
+beats
+    ↓
+Any non-trump card
+```
+
+If nobody plays trump, the highest card of the lead suit wins.
+
+The player who wins the trick leads the next one.
+
+There are **eight tricks** in every round.
+
+---
+
+## 📊 Scoring
+
+After all eight tricks:
+
+```text
+Team points + final trick bonus
+```
+
+are compared against the bidding team's contract.
+
+If the bidding team reaches its bid, it wins the round.
+
+Otherwise, the opposing team wins.
+
+---
+
+# 🏗️ Architecture
+
+The project separates the game engine from the Flask interface.
+
+```text
+                     ┌─────────────────┐
+                     │   Flask / Web   │
+                     │      UI        │
+                     └────────┬────────┘
+                              │
+                              ▼
+                     ┌─────────────────┐
+                     │  Round Engine   │
+                     │  play_game()    │
+                     └────────┬────────┘
+                              │
+             ┌────────────────┼────────────────┐
+             ▼                ▼                ▼
+        ┌──────────┐    ┌──────────┐    ┌──────────┐
+        │  Rules   │    │ Players  │    │ Scoring  │
+        └──────────┘    └────┬─────┘    └──────────┘
+                              │
+                              ▼
+                         ┌─────────┐
+                         │ Bot AI  │
+                         └─────────┘
+```
+
+The core game engine does **not depend on Flask**.
+
+This allows the same engine to power both:
+
+```text
+Browser game
+      +
+Terminal game
+```
+
+---
+
+# ⚙️ Generator-Based Game Engine
+
+The original game was implemented as a blocking terminal loop using `input()`.
+
+That approach doesn't work well with HTTP because a web request should not remain blocked while waiting for a player's next move.
+
+The solution is a generator:
+
+```python
+play_game()
+```
+
+located in:
+
+```text
+algorithm/round_flow.py
+```
+
+The generator yields an event whenever something happens.
+
+For example:
+
+```text
+need_name
+need_bid
+need_trump
+need_dig_choice
+need_card
+round_result
+```
+
+The Flask application pauses the generator, renders the appropriate screen, and resumes it when the player submits an answer.
+
+### Event flow
+
+```text
+                 play_game()
+                     │
+                     ▼
+               ┌───────────┐
+               │ need_bid  │
+               └─────┬─────┘
+                     │
+               Browser UI
+                     │
+                     ▼
+               Player submits
+                     │
+                     ▼
+               resume generator
+                     │
+                     ▼
+               next game event
+```
+
+This keeps the **game engine independent from the UI**.
+
+---
+
+# 🌐 Web Application
+
+The Flask application stores the generator and currently pending event in memory.
+
+### Routes
+
+| Route             | Purpose                        |
+| ----------------- | ------------------------------ |
+| `GET /`           | Render the current game screen |
+| `POST /new-game`  | Start a new round              |
+| `POST /name`      | Submit player name             |
+| `POST /bid`       | Submit bid                     |
+| `POST /trump`     | Select trump                   |
+| `POST /dig`       | Choose whether to dig          |
+| `POST /play-card` | Play a card                    |
+
+Invalid input does not advance the game.
+
+Instead, the same event is yielded again with an error message.
+
+---
+
+# 🎬 Replay System
+
+After a move, the server converts game events into replay frames.
+
+For example:
+
+```text
+Player card
+     ↓
+Bot 1 card
+     ↓
+Bot 2 card
+     ↓
+Bot 3 card
+     ↓
+Trick winner
+```
+
+The browser then displays each frame sequentially.
+
+Replay timing is centralized through:
+
+```python
+REPLAY_MS
+```
+
+The replay is server-rendered, meaning refreshing the page can replay the most recent move.
+
+A **Skip** button allows the player to immediately finish the replay.
+
+---
+
+# 🎨 Front End
+
+The frontend deliberately avoids a JavaScript framework.
+
+It uses:
+
+```text
+Flask
+Jinja2
+HTML
+CSS
+Vanilla JavaScript
+```
+
+### Card rendering
+
+Cards follow this naming convention:
+
+```text
+static/<Rank>_of_<Suit>.png
+```
+
+For example:
+
+```text
+Ace_of_Diamonds.png
+King_of_Hearts.png
+Jack_of_Spades.png
+```
+
+### CSS
+
+The table, card animations, hand fan, seat positions, and transitions are implemented in:
+
+```text
+static/CSS/style.css
+```
+
+CSS custom properties such as:
+
+```text
+--i
+--n
+--order
+```
+
+control card positioning and animation timing.
+
+### JavaScript
+
+`static/JS/app.js` provides progressive enhancement:
+
+* Card transitions
+* Page fade animations
+* Replay playback
+* Double-submit prevention
+* Scroll restoration
+
+The game still works without JavaScript because the underlying controls are normal HTML forms.
+
+---
+
+# 📁 Project Structure
+
+```text
+29cardgame/
+│
+├── app.py
+│
+├── algorithm/
+│   ├── __init__.py
+│   ├── game.py
+│   ├── round_flow.py
+│   │
+│   └── initialize_cards/
+│       ├── card.py
+│       ├── player.py
+│       ├── bot.py
+│       ├── bidding.py
+│       └── helpers.py
+│
+├── data/
+│   ├── card_value.json
+│   └── card_points.json
+│
+├── static/
+│   ├── cards/
+│   ├── CSS/
+│   │   └── style.css
+│   └── JS/
+│       └── app.js
+│
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   └── _partials/
+│
+├── tests/
+│   └── ...
+│
+├── docs/
+│   └── screenshots/
+│
+├── pyproject.toml
+└── uv.lock
+```
+
+---
+
+# 🚀 Quick Start
+
+## Requirements
+
+* Python **3.12+**
+* [`uv`](https://docs.astral.sh/uv/)
+
+## Install
+
+Clone the repository:
+
+```bash
+git clone https://github.com/CodingTech2O/29cardgame.git
+cd 29cardgame
+```
+
+Run the application:
 
 ```bash
 uv run python app.py
 ```
 
-Then open <http://127.0.0.1:5000>.
+Then open:
 
-Optional: copy `.env.example` to `.env` and set `SECRET_KEY` (used to sign forms). Without it a development default is used.
+```text
+http://127.0.0.1:5000
+```
 
-There is also a terminal version of the same game, driven by the same engine:
+### Environment variables
+
+Optionally create:
+
+```text
+.env
+```
+
+from:
+
+```text
+.env.example
+```
+
+and configure:
+
+```text
+SECRET_KEY=your-secret-key
+```
+
+The application uses this key to sign Flask forms.
+
+---
+
+# 🖥️ Terminal Version
+
+The browser is not the only way to play.
+
+The same game engine can be launched from the terminal:
 
 ```bash
 uv run python -c "from algorithm import main_game; main_game()"
 ```
 
-## How the game works
+This is useful for:
 
-- **Deck and points.** 32 cards. Rank order high to low: Jack, 9, Ace, 10, King, Queen, 8, 7. Points: Jack 3, 9 2, Ace 1, 10 1, everything else 0. That is 28, plus 1 for winning the last trick, which makes 29.
-- **Teams.** You and Bot 2 against Bot 1 and Bot 3.
-- **Deal and bidding.** Everyone gets four cards, then bids. The bots bid from their hand strength; you always get a turn to beat the standing bid (or pass with 0). The winner names a trump suit in secret, then everyone gets four more cards.
-- **Hidden trump.** Trump does nothing until someone *digs*.
-- **Digging.** If you are not leading, have no card of the lead suit, and trump has not been revealed, you may dig. That reveals trump to everyone, and from then on trump beats the lead suit. If you dig, you must play a trump card that turn if you hold one. Bots can dig on their own turns too.
-- **Tricks.** Follow the lead suit if you can. The highest trump wins the trick if any were played (once revealed); otherwise the highest card of the lead suit wins. The winner leads next.
-- **Scoring.** The bidding team wins the round if the points it collected, plus 1 for the last trick, reach its bid. Otherwise the other team wins.
+* debugging
+* testing game logic
+* experimenting with bot behaviour
+* running simulations
 
-## Project layout
+---
 
-```text
-app.py                       Flask app; each route feeds one answer into the game generator
-algorithm/
-  __init__.py                terminal driver (main_game) and should_offer_dig
-  game.py                    game state, trick evaluation, round scoring
-  round_flow.py              play_game(): the whole round as a generator
-  initialize_cards/
-    card.py player.py bot.py Card, the human Player, and the heuristic Bot
-    bidding.py               decide_bid plus the two bot-only auctions
-    helpers.py               input/print helpers used by the terminal driver
-data/                        card_value.json (rank order), card_points.json
-templates/                   base.html, index.html, _partials/ (one per screen)
-static/                      32 card PNGs, CSS/style.css, JS/app.js
-tests/                       pytest suite and a headless game harness
-```
+# 🧪 Testing
 
-## How it works
-
-The original game was a blocking terminal loop that called `input()` in the middle of bidding and play. A web request cannot wait for the next request, so the round is written as a **generator**, `play_game()` in `algorithm/round_flow.py`. It yields a small dict every time something happens, and pauses only when it needs an answer from the human:
-
-| Event | Meaning | Send back |
-| --- | --- | --- |
-| `need_name` | ask for a name | a non-empty string |
-| `need_bid` | ask for a bid | an integer: `0` or above `to_beat` |
-| `need_trump` | ask for a trump suit | one of the four suits |
-| `need_dig_choice` | offer the dig | `"y"` or `"n"` |
-| `need_card` | ask for a card | a `(rank, suit)` tuple |
-| `round_result` | final result | nothing; the round is over |
-
-Every other event (`bot_bid`, `human_played`, `bot_played`, `dug`, `trick_won`, `hand_dealt`, `bid_won`) is informational and drains automatically. Each play event carries a snapshot of the trick as it stood, which is what the replay is built from. An invalid answer re-yields the same event with an `error` message instead of advancing, so bad input just re-renders the same screen.
-
-`app.py` keeps the generator and the latest pending event in memory. Each POST route forwards its form value into the generator and redirects back to `/`, which renders the pending event. The terminal driver, `main_game()`, is a small loop over the same generator.
-
-| Route | Purpose |
-| --- | --- |
-| `GET /` | render the current screen |
-| `POST /new-game` | start a round |
-| `POST /name`, `/bid`, `/trump`, `/dig`, `/play-card` | answer the matching pending event |
-
-## Front end
-
-- Card images are `static/<Rank>_of_<Suit>.png`, so the URL is built straight from `card.name` and `card.suit`.
-- `static/CSS/style.css` holds all styling and animation. The hand fan, the deal-in stagger, and the seat positions are driven by CSS custom properties set from the templates (`--i`, `--n`, `--order`).
-- `static/JS/app.js` is progressive enhancement only: it plays the card-lift and page-fade transitions before a form posts, steps through the replay frames, ignores double submits, and restores your scroll position after each move. With JavaScript off, every form still works as a plain POST and the replay is simply skipped.
-- **Replay timing.** `app.py` turns the events drained by a move into frames (`_replay_frames`), and the durations live in one place, `REPLAY_MS`. The server renders every frame into the page and the script reveals them in turn, so reloading the page replays the last move.
-- Animations use the individual `translate`, `rotate` and `scale` properties, so they need a current browser.
-
-## Tests
+Run the unit tests:
 
 ```bash
-uv run --with pytest python -m pytest            # unit tests
-uv run python -m tests.harness 200 0             # 200 headless games: crashes and follow-suit violations
+uv run --with pytest python -m pytest
 ```
 
-The harness plays complete games by feeding scripted answers to `main_game()`, so it also exercises the generator that the web app uses.
+Run the headless game harness:
 
-## Known limitations
+```bash
+uv run python -m tests.harness 200 0
+```
 
-- **One shared game.** State lives in module-level variables, so everyone who opens the server sees the same game. Run a single process; this is a development server, not a deployment. There is no button to abandon a round in progress: finish it or restart the server.
-- **All-pass rounds.** If all three bots and you pass, the round is played with no trump instead of being redealt.
-- **No bid cap.** Bids above 28 are accepted, although they cannot be made.
-- **Forced trump after digging.** The must-play-trump rule applies only on the turn you dig, as in the original terminal game.
-- **Bot AI.** `algorithm/initialize_cards/bot.py` is a large heuristic with a lot of duplicated branches; it is covered by the harness but not by unit tests.
+The harness can play complete games automatically.
+
+For example:
+
+```text
+200 games
+     ↓
+Game engine
+     ↓
+Bots + scripted player
+     ↓
+Rule validation
+     ↓
+Crash detection
+```
+
+The harness specifically checks for issues such as:
+
+* Game crashes
+* Invalid card plays
+* Follow-suit violations
+* Broken game-state transitions
+
+This also exercises the same generator used by the web application.
+
+---
+
+# 🤖 Bot AI
+
+The bots currently use a **heuristic decision system**.
+
+The bot considers information such as:
+
+* Cards in its hand
+* Card values
+* Lead suit
+* Trump
+* Previously played cards
+* Available cards
+* Current trick
+* Game state
+
+The AI is implemented primarily in:
+
+```text
+algorithm/initialize_cards/bot.py
+```
+
+The current implementation is intentionally heuristic rather than machine-learning based.
+
+This makes the decision process deterministic and inspectable while keeping the project lightweight.
+
+---
+
+# 🔬 Future Improvements
+
+The project is currently focused on building a reliable game engine and playable interface.
+
+Potential future work includes:
+
+### AI
+
+* [ ] Improve bot decision-making
+* [ ] Reduce duplicated heuristic branches
+* [ ] Add multiple difficulty levels
+* [ ] Add card-counting strategies
+* [ ] Experiment with Monte Carlo simulation
+* [ ] Experiment with Minimax / Expectimax
+* [ ] Benchmark different bot strategies
+
+### Simulation
+
+* [ ] Automated thousands-of-game simulations
+* [ ] Bot win-rate statistics
+* [ ] Strategy comparison
+* [ ] Game replay files
+* [ ] AI performance dashboard
+
+### Engineering
+
+* [ ] Increase unit-test coverage
+* [ ] Add property-based testing
+* [ ] Add type checking
+* [ ] Add linting
+* [ ] Add GitHub Actions CI
+* [ ] Improve multiplayer/state management
+
+### Web
+
+* [ ] Persistent player statistics
+* [ ] Game history
+* [ ] Replay previous games
+* [ ] Improved mobile UI
+* [ ] Multiplayer support
+
+---
+
+# ⚠️ Known Limitations
+
+### Single shared game
+
+The current application stores game state in module-level variables.
+
+Therefore:
+
+> Everyone connected to the same server shares the same game.
+
+The application is intended as a development/personal deployment rather than a production multiplayer server.
+
+---
+
+### All-pass rounds
+
+If all players pass, the current implementation continues the round without a trump suit rather than redealing.
+
+---
+
+### Bid limits
+
+Bids above 28 are currently accepted even though they cannot be achieved.
+
+---
+
+### Digging
+
+The must-play-trump rule applies only to the turn on which a player digs, matching the behaviour of the original terminal implementation.
+
+---
+
+### Bot testing
+
+The bot AI is exercised by the headless game harness, but much of the heuristic logic does not yet have dedicated unit tests.
+
+---
+
+# 🛠️ Tech Stack
+
+| Technology | Purpose                                    |
+| ---------- | ------------------------------------------ |
+| Python     | Game engine                                |
+| Flask      | Web server                                 |
+| Jinja2     | HTML rendering                             |
+| HTML/CSS   | User interface                             |
+| JavaScript | Progressive enhancement & replay           |
+| pytest     | Automated testing                          |
+| uv         | Python environment & dependency management |
+| JSON       | Card configuration                         |
+
+---
+
+# 📌 Project Goals
+
+This project is more than a browser implementation of a card game.
+
+The goal is to explore:
+
+* Object-oriented Python
+* Game-state management
+* Rule engines
+* Heuristic AI
+* Generator-based program flow
+* HTTP request/state handling
+* Automated game simulation
+* Testing complex state transitions
+* Browser UI without a frontend framework
+
+---
+
+
+## Built with Python 🐍
+
+A small card game turned into an unnecessarily complicated exercise in **game theory, state machines, AI, Flask, testing, and debugging**.
+
+Exactly how software projects are supposed to spiral out of control.
