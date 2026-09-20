@@ -1,0 +1,21 @@
+{% from "_partials/macros.html" import suit_icon %}
+<section class="panel narrow">
+    {% if pending.error %}<p class="error-message" role="alert">{{ pending.error }}</p>{% endif %}
+    <h2>Name your trump</h2>
+    <p class="lead">Your bid of <strong class="big-num">{{ pending.bid }}</strong> won. Pick the suit that will rule the round &mdash; it stays hidden until someone digs.</p>
+    <div class="suit-choices">
+        {% for suit in pending.suits %}
+        <form method="post" action="{{ url_for('submit_trump') }}" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="trump" value="{{ suit }}">
+            <button type="submit" class="suit-btn suit-{{ suit | lower }}" style="--i: {{ loop.index0 }}">
+                {{ suit_icon(suit) }}
+                <span>{{ suit }}</span>
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+    {% if player %}
+        {% with hand_cards=player.cards, hand_animate=false %}{% include "_partials/hand_display.html" %}{% endwith %}
+    {% endif %}
+</section>

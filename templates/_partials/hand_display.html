@@ -1,0 +1,8 @@
+{% from "_partials/macros.html" import card_img %}
+<div class="hand fan{% if hand_animate %} deal{% endif %}" style="--n: {{ hand_cards | length }}">
+    {% for card in hand_cards %}
+    <div class="card-form is-static" style="--i: {{ loop.index0 }}">
+        {{ card_img(card.name, card.suit) }}
+    </div>
+    {% endfor %}
+</div>

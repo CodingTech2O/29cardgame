@@ -1,0 +1,19 @@
+{% from "_partials/macros.html" import suit_icon %}
+<section class="history-log">
+    <h3>Table talk</h3>
+    <ul>
+        {% for event in history %}
+        <li class="ev-{{ event.type }}">
+            {% if event.type == "hand_dealt" %}{{ "You were dealt your first 4 cards" if event.phase == "initial" else "You were dealt 4 more cards" }}
+            {% elif event.type == "bot_bid" %}{{ event.bidder }} {{ "bids " ~ event.bid if event.bid else "passes" }}
+            {% elif event.type == "bid_won" and not event.bid %}Everyone passed &mdash; no trump this round
+            {% elif event.type == "bid_won" %}{{ event.winner }} made trump at {{ event.bid }}{% if event.is_human %} ({{ suit_icon(event.trump) }} {{ event.trump }}){% endif %}
+            {% elif event.type == "human_played" %}You played {{ event.name }} {{ suit_icon(event.suit) }}
+            {% elif event.type == "bot_played" %}{{ event.bot }} played {{ event.name }} {{ suit_icon(event.suit) }}
+            {% elif event.type == "dug" %}Trump revealed: {{ suit_icon(event.trump) }} {{ event.trump }}
+            {% elif event.type == "trick_won" %}Trick {{ event.trick_num }} won by {{ event.winner }}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>

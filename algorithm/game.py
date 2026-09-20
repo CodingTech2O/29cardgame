@@ -18,10 +18,7 @@ class Game:
     def __init__(self, state):
         self.state = state
 
-        cards = []
-        for suit in SUITS:
-            for name in data:
-                cards.append(Card(name, suit))
+        cards = self.build_full_deck()
 
         self.cards = cards
         self.all_cards = list(cards)
@@ -30,6 +27,15 @@ class Game:
         self.players = []
         self.itr = 0
         self.trump = None
+
+    @staticmethod
+    def build_full_deck():
+        return [Card(name, suit) for suit in SUITS for name in data]
+
+    def reset(self):
+        """Reinitialize in place so existing `from algorithm.game import game`
+        references keep pointing at the live game after a new round starts."""
+        self.__init__("Bid")
 
     def register_trump(self, trump):
         self.trump = trump

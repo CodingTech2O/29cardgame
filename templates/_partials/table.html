@@ -1,0 +1,45 @@
+{% from "_partials/macros.html" import card_img, suit_icon, felt_table, replay_frames %}
+
+<div class="table-top">
+{% if replay %}<div class="replay-note"><strong>Watch the table</strong><span>Cards are shown one at a time</span></div>{% endif %}
+<div class="status-bar">
+    <span class="pill">Trick <strong>{{ trick_number }}</strong> / 8</span>
+    {% if contract and contract.bid %}
+        <span class="pill">Bid <strong>{{ contract.bid }}</strong> &middot; {{ "You" if contract.is_human else contract.winner }}</span>
+    {% endif %}
+    {% if pending.trump %}
+        <span class="pill pill-trump revealed">Trump {{ suit_icon(pending.trump) }} {{ pending.trump }}</span>
+    {% else %}
+        <span class="pill pill-trump concealed">Trump hidden</span>
+    {% endif %}
+    {% if pending.lead_suit %}
+        <span class="pill">Lead {{ suit_icon(pending.lead_suit) }} {{ pending.lead_suit }}</span>
+    {% else %}
+        <span class="pill">You lead</span>
+    {% endif %}
+    {% if pending.must_follow_suit %}<span class="pill pill-warn">Follow suit</span>{% endif %}
+</div>
+
+{% if last_trick %}
+<div class="last-trick">
+    <span class="last-label">Last trick <strong>#{{ last_trick.trick_num }}</strong> won by <strong>{{ "you" if last_trick.winner_seat == "you" else last_trick.winner }}</strong></span>
+    <div class="last-cards">
+        {% for c in last_trick.cards %}
+        <div class="mini{% if c.seat == last_trick.winner_seat %} is-winner{% endif %}">
+            {{ card_img(c.name, c.suit, "mini-card") }}
+            <span class="mini-name">{{ "You" if c.seat == "you" else c.player }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+</div>
+
+<div class="felt-stack"{% if replay %} data-replay{% endif %}>
+    {{ replay_frames(replay, player.name) }}
+    <div class="felt-frame is-live{% if not replay %} is-active{% endif %}"{% if replay %} data-final{% endif %}>
+        <p class="frame-caption"></p>
+        {{ felt_table(pending.current_hand, player.name, stagger=not replay, no_anim=(replay or pending.error)) }}
+    </div>
+</div>
+{% if replay %}<button type="button" class="btn btn-ghost btn-sm replay-skip" data-replay-skip>Skip</button>{% endif %}

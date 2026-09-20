@@ -1,0 +1,15 @@
+{% from "_partials/macros.html" import card_img %}
+<section class="panel hero">
+    <div class="hero-cards" aria-hidden="true">
+        {{ card_img("Ace", "Clubs", "hero-card", "--i: 0") }}
+        {{ card_img("Ace", "Diamonds", "hero-card", "--i: 1") }}
+        {{ card_img("Ace", "Hearts", "hero-card", "--i: 2") }}
+        {{ card_img("Ace", "Spades", "hero-card", "--i: 3") }}
+    </div>
+    <h2>Ready for a round?</h2>
+    <p class="lead">You and Bot 2 against Bot 1 and Bot 3. Win the bid, name your trump, and take the points.</p>
+    <form method="post" action="{{ url_for('new_game') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary btn-lg btn-glow">New Game</button>
+    </form>
+</section>

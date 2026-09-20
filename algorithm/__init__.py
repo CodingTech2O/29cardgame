@@ -1,104 +1,70 @@
-from algorithm.initialize_cards import initialize_cards,take_input_from_user,display_output_to_user,Bot,Player,Card
-from algorithm.game import game, SUITS
+from algorithm.initialize_cards.helpers import take_input_from_user, display_output_to_user
+from algorithm.round_flow import play_game, should_offer_dig
 
 
-def should_offer_dig(is_leading, suit_in_cards, is_digged):
-    """Only offer the dig when genuinely void in the lead suit, not leading."""
-    return not is_leading and not suit_in_cards and not is_digged
+def _cli_prompt_for(event):
+    t = event["type"]
+    if t == "need_name":
+        return take_input_from_user("Name: ", str)
+    if t == "need_bid":
+        return take_input_from_user(
+            f"Your bid, must beat {event['to_beat']} from {event['leader']}, pass = 0: ", int
+        )
+    if t == "need_trump":
+        return take_input_from_user("Enter your trump: ", str)
+    if t == "need_dig_choice":
+        return take_input_from_user("Do you want to dig? Y/N: ", str).strip().lower()
+    if t == "need_card":
+        while True:
+            raw = take_input_from_user("Enter card to play: ", str)
+            if " of " not in raw:
+                display_output_to_user(
+                    "Please enter a card as '<rank> of <suit>', e.g. 'Jack of Spades'."
+                )
+                continue
+            name, suit = raw.split(" of ", 1)
+            return (name, suit)
+    raise AssertionError(f"no CLI handling for pause event type {t!r}")
+
+
+def _narrate(event):
+    t = event["type"]
+    if t == "hand_dealt":
+        display_output_to_user(", ".join(f"{c['name']} of {c['suit']}" for c in event["hand"]))
+    elif t == "bot_bid":
+        note = f" ({event['trump']})" if event["bid"] else ""
+        display_output_to_user(f"{event['bidder']} bids {event['bid']}{note}")
+    elif t == "bid_won":
+        display_output_to_user(f"{event['winner']} made trump at {event['bid']}")
+    elif t == "bot_played":
+        display_output_to_user(f"{event['bot']} played {event['name']} of {event['suit']}")
+    elif t == "dug":
+        display_output_to_user(f"Trump is {event['trump']}")
+    elif t == "trick_won":
+        display_output_to_user(f"Trick {event['trick_num']} won by {event['winner']}")
 
 
 def main_game():
-    bots, player = initialize_cards()
-    game.state = "Playing"
-    game.players = []
-    last_hands = []
+    """Synchronous CLI driver over algorithm.round_flow.play_game()."""
+    gen = play_game()
+    value = None
+    while True:
+        try:
+            event = gen.send(value)
+        except StopIteration:
+            return
 
-    for bot in bots:
-        game.players.append(bot)
+        if event["type"] == "round_result":
+            display_output_to_user(event["winners"])
+            return
 
-    game.players.append(player)
-
-    for i in range(8):
-        current_hand = []
-
-        for p in game.players:
-            if type(p) == Player:
-
-                is_leading = len(current_hand) == 0
-                lead_suit = current_hand[0].suit if not is_leading else None
-                suit_in_cards = is_leading or any(
-                    card.suit == lead_suit for card in player.cards
-                )
-
-                dig = None
-                if should_offer_dig(is_leading, suit_in_cards, game.is_digged):
-                    dig = take_input_from_user("Do you want to dig? Y/N: ",str)
-                    if dig.lower() == "y":
-                        display_output_to_user("Trump is" + game.dig())
-
-                while True:
-                    raw_card = take_input_from_user("Enter card to play: ",str)
-
-                    if " of " not in raw_card:
-                        display_output_to_user(
-                            "Please enter a card as '<rank> of <suit>', e.g. 'Jack of Spades'."
-                        )
-                        continue
-
-                    name, suit = raw_card.split(" of ", 1)
-
-                    if suit not in SUITS:
-                        display_output_to_user(f"'{suit}' is not a valid suit.")
-                        continue
-
-                    try:
-                        player_card = Card(name, suit)
-                    except KeyError:
-                        display_output_to_user(f"'{name}' is not a valid rank.")
-                        continue
-
-                    if player_card not in player.cards:
-                        display_output_to_user(f"{player_card} is not in your hand.")
-                        continue
-
-                    if (
-                        dig and dig.lower() == "y" and game.is_digged
-                        and player_card.suit != game.trump
-                        and player.filter(player.cards, suit=game.trump)
-                    ):
-                        display_output_to_user("You must play trump suit card!")
-                        continue
-
-                    if not is_leading and suit_in_cards and player_card.suit != lead_suit:
-                        display_output_to_user(
-                            f"You must follow suit ({lead_suit}) since you have it."
-                        )
-                        continue
-
-                    try:
-                        card = p.play_card(player_card)
-                        break
-                    except ValueError:
-                        display_output_to_user(
-                            f"{player_card} is not in your hand. Enter a card from your hand."
-                        )
-
-            else:
-                card = p.decide_card_to_play(
-                    game,
-                    current_hand,
-                    last_hands
-                )
-
-                display_output_to_user(card)
-
-            current_hand.append(card)
-        game.decide_new_order(current_hand)
-        game.play_hand(current_hand)
-        display_output_to_user(player.cards)
-
-        last_hands.append(current_hand)
-    display_output_to_user(game.evaluate_round_winner())
+        if event["type"].startswith("need_"):
+            if event.get("error"):
+                display_output_to_user(event["error"])
+            value = _cli_prompt_for(event)
+        else:
+            _narrate(event)
+            value = None
 
 
 if __name__ == "__main__":

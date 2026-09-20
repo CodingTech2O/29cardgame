@@ -1,0 +1,30 @@
+<section class="panel narrow">
+    {% if pending.error %}<p class="error-message" role="alert">{{ pending.error }}</p>{% endif %}
+    <h2>Bidding</h2>
+    <p class="lead">
+        {% if pending.to_beat %}
+            {{ pending.leader }} holds the bid at <strong class="big-num">{{ pending.to_beat }}</strong>. Beat it or pass.
+        {% else %}
+            Nobody has bid yet. Open the bidding or pass.
+        {% endif %}
+    </p>
+    <div class="bid-actions">
+        <form method="post" action="{{ url_for('submit_bid') }}" class="bid-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field">
+                <label for="bid">Your bid</label>
+                <input type="number" id="bid" name="bid" min="{{ pending.to_beat + 1 }}" value="{{ pending.to_beat + 1 }}" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary">Bid</button>
+        </form>
+        <form method="post" action="{{ url_for('submit_bid') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="bid" value="0">
+            <button type="submit" class="btn btn-ghost">Pass</button>
+        </form>
+    </div>
+    {% if player %}
+        <p class="hint">Your first four cards</p>
+        {% with hand_cards=player.cards, hand_animate=true %}{% include "_partials/hand_display.html" %}{% endwith %}
+    {% endif %}
+</section>

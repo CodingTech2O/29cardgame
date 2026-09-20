@@ -1,0 +1,8 @@
+{% from "_partials/macros.html" import replay_frames %}
+<section class="panel replay-panel">
+    <p class="result-kicker">The last trick</p>
+    <div class="felt-stack" data-replay>
+        {{ replay_frames(replay, player.name) }}
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm replay-skip" data-replay-skip>Skip</button>
+</section>

@@ -1,0 +1,56 @@
+{% macro card_img(name, suit, cls="", style="") -%}
+<img class="card-img {{ cls }}" src="{{ url_for('static', filename=name ~ '_of_' ~ suit ~ '.png') }}" alt="{{ name }} of {{ suit }}" draggable="false"{% if style %} style="{{ style }}"{% endif %}>
+{%- endmacro %}
+
+{% macro suit_icon(suit) -%}
+<span class="suit suit-{{ suit | lower }}" aria-hidden="true">{{ {'Spades': '♠', 'Clubs': '♣', 'Diamonds': '♦', 'Hearts': '♥'}[suit] }}</span>
+{%- endmacro %}
+
+{# One trick laid out around the table. `new_seat` gets the arrival animation,
+   `winner_seat` gets the gold highlight, `stagger` animates every card in turn. #}
+{% macro felt_table(trick, you_name, new_seat=none, winner_seat=none, stagger=false, no_anim=false) -%}
+{% set seats = [("Bot2", "n", "Bot 2"), ("Bot1", "w", "Bot 1"), ("Bot3", "e", "Bot 3"), ("you", "s", you_name)] %}
+{% set played_seats = trick | map(attribute="seat") | list %}
+<div class="felt-table{% if stagger %} stagger{% endif %}{% if no_anim %} no-anim{% endif %}">
+    {% for seat, area, label in seats %}
+    <div class="seat seat-{{ area }}{% if seat in played_seats %} has-card{% endif %}">
+        <span class="seat-name">
+            <span class="avatar">{{ (you_name[0] | upper) if seat == "you" else (seat[0] ~ seat[-1]) }}</span>
+            {{ "You" if seat == "you" else label }}
+        </span>
+        {% if seat in played_seats %}
+            {% set order = played_seats.index(seat) %}
+            {% set c = trick[order] %}
+            {{ card_img(c.name, c.suit, "trick-card" ~ (" is-new" if seat == new_seat else "") ~ (" is-winner" if seat == winner_seat else ""), "--order: " ~ order) }}
+        {% else %}
+            <span class="slot"></span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro frame_caption(f) -%}
+{% if f.type == "human_played" %}You played {{ f.name }} {{ suit_icon(f.suit) }}
+{%- elif f.type == "bot_played" %}{{ f.bot }} played {{ f.name }} {{ suit_icon(f.suit) }}{% if f.dug_trump %} &mdash; dug! Trump is {{ suit_icon(f.dug_trump) }} {{ f.dug_trump }}{% endif %}
+{%- elif f.type == "trick_won" %}Trick {{ f.trick_num }} goes to {{ "you" if f.winner_seat == "you" else f.winner }}
+{%- endif %}
+{%- endmacro %}
+
+{# The replay frames for one move: each frame is the table as it looked after one play. #}
+{% macro replay_frames(frames, you_name) -%}
+{% for f in frames %}
+    {% if f.type == "trick_won" %}
+        {% set trick = f.cards %}{% set new = none %}{% set win = f.winner_seat %}
+    {% elif f.type == "human_played" %}
+        {% set trick = f.trick %}{% set new = "you" %}{% set win = none %}
+    {% else %}
+        {% set trick = f.trick %}{% set new = f.bot %}{% set win = none %}
+    {% endif %}
+    <div class="felt-frame{% if loop.first %} is-active{% endif %}" data-ms="{{ f.ms }}" style="--ms: {{ f.ms }}ms">
+        <p class="frame-caption">{{ frame_caption(f) }}</p>
+        <div class="frame-timer"></div>
+        {{ felt_table(trick, you_name, new_seat=new, winner_seat=win) }}
+    </div>
+{% endfor %}
+{%- endmacro %}

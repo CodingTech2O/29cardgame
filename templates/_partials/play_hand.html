@@ -1,0 +1,26 @@
+{% from "_partials/macros.html" import card_img %}
+<section class="panel play-panel">
+    {% if pending.error %}<p class="error-message" role="alert">{{ pending.error }}</p>{% endif %}
+    {% include "_partials/table.html" %}
+    <p class="hint">
+        {% if pending.lead_suit %}
+            {% if pending.must_follow_suit %}Follow {{ pending.lead_suit }} &mdash; the faded cards can't be played.
+            {% elif pending.trump %}You have no {{ pending.lead_suit }} &mdash; a trump card would take this trick.
+            {% else %}You have no {{ pending.lead_suit }}. Play any card.{% endif %}
+        {% else %}
+            Your lead &mdash; pick any card.
+        {% endif %}
+    </p>
+    <div class="hand fan{% if trick_number == 1 and not pending.error %} deal{% endif %}" style="--n: {{ pending.hand | length }}">
+        {% for card in pending.hand %}
+        <form method="post" action="{{ url_for('submit_card') }}" class="card-form{% if pending.must_follow_suit and card.suit != pending.lead_suit %} is-illegal{% endif %}" style="--i: {{ loop.index0 }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="name" value="{{ card.name }}">
+            <input type="hidden" name="suit" value="{{ card.suit }}">
+            <button type="submit" class="card-btn" aria-label="Play {{ card.name }} of {{ card.suit }}">
+                {{ card_img(card.name, card.suit) }}
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+</section>

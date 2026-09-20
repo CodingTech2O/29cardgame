@@ -1,0 +1,24 @@
+{% from "_partials/macros.html" import suit_icon %}
+<section class="panel result {{ 'is-win' if pending.you_won else 'is-loss' }}">
+    {% if pending.you_won %}
+    <div class="confetti" aria-hidden="true">
+        {% for i in range(28) %}<i style="--x: {{ (i * 37) % 100 }}%; --d: {{ ((i * 53) % 20) / 10 }}s; --r: {{ (i * 47) % 360 }}deg"></i>{% endfor %}
+    </div>
+    {% endif %}
+    <p class="result-kicker">Round over</p>
+    <h2 class="result-title">{{ "Your team wins!" if pending.you_won else "Your team loses" }}</h2>
+    <p class="lead">
+        {% if pending.bid %}
+            {{ pending.making_player }} bid <strong class="big-num">{{ pending.bid }}</strong> with
+            {{ suit_icon(pending.trump) }} {{ pending.trump }} as trump and
+            {{ "made it." if pending.made_it else "went down." }}
+        {% else %}
+            Everyone passed, so this round was played without a trump.
+        {% endif %}
+    </p>
+    <p class="winners">Winners: {{ pending.winners | join(" & ") }}</p>
+    <form method="post" action="{{ url_for('new_game') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary btn-lg btn-glow">Play Again</button>
+    </form>
+</section>

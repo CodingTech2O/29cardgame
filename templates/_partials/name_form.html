@@ -1,0 +1,13 @@
+<section class="panel narrow">
+    {% if pending.error %}<p class="error-message" role="alert">{{ pending.error }}</p>{% endif %}
+    <h2>Take a seat</h2>
+    <p class="lead">Bot 2 is your partner. What should the table call you?</p>
+    <form method="post" action="{{ url_for('submit_name') }}" class="stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name" maxlength="20" autocomplete="nickname" autofocus required>
+        </div>
+        <button type="submit" class="btn btn-primary">Deal me in</button>
+    </form>
+</section>

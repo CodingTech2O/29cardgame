@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+    {% if not started %}
+        {% include "_partials/start.html" %}
+    {% elif pending.type == "need_name" %}
+        {% include "_partials/name_form.html" %}
+    {% elif pending.type == "need_bid" %}
+        {% include "_partials/bid_form.html" %}
+    {% elif pending.type == "need_trump" %}
+        {% include "_partials/trump_form.html" %}
+    {% elif pending.type == "need_dig_choice" %}
+        {% include "_partials/dig_form.html" %}
+    {% elif pending.type == "need_card" %}
+        {% include "_partials/play_hand.html" %}
+    {% elif pending.type == "round_result" %}
+        {% if replay %}{% include "_partials/replay_stage.html" %}{% endif %}
+        <div class="await-replay">{% include "_partials/round_result.html" %}</div>
+    {% elif pending.type == "game_over" %}
+        <section class="panel">
+            <p>The game ended unexpectedly.</p>
+        </section>
+        {% include "_partials/start.html" %}
+    {% endif %}
+
+    {% if started %}
+        {% include "_partials/history.html" %}
+    {% endif %}
+{% endblock %}
