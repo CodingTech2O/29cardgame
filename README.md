@@ -1,6 +1,6 @@
 # 29 Card Game
 
-![Demo](https://two9cardgame-skj7.onrender.com/)
+[Demo](https://two9cardgame-skj7.onrender.com/)
 
 A browser-based implementation of **29**, the four-player Indian trick-taking card game.
 
